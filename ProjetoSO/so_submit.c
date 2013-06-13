@@ -6,21 +6,42 @@
 #include "basic_types.h"
 #include "so_submit.h"
 
+#define MAX_LINE_LENGTH 100
+
 typedef struct process process;
+
+int parse_process_list(struct process** p_list, const FILE* fp) {
+    char str[MAX_LINE_LENGTH];
+
+    fgets(&str, MAX_LINE_LENGTH, fp);
+
+
+
+}
 
 int main(int argc, char *argv[]) {
 
- //   FILE *fp;
-    struct process x[10];
     int *pshm, idshm;
     int i, j;
+    FILE *fp;
+    process *p_list;
+    const char* filename;
+    int status;
 
     if(argc < 2) {
         fprintf(stderr, "Usage: so_submit <process file>.\n");
         exit(1);
     }
 
-//    parse
+    filename = argv[1];
+
+    fp = fopen(filename);
+    if(!fp) {
+        fprintf(stderr, "Can't open specified file: <%s>.\n", filename);
+        exit(1);
+    }
+
+    status = parse_process_list(fp, &p_list);
 
     /*************************************************/
     /** shared mem structure:						**/
