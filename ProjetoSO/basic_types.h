@@ -2,11 +2,11 @@
 #define BASIC_TYPES
 
 struct process {
-	char* exec_path;
+	char *exec_path;
 	int argc;
-	char* argv[];
 	unsigned long max_time;
-	unsigned int n_proc
+	unsigned int n_proc;
+	char **argv;
 };
 
 #endif
