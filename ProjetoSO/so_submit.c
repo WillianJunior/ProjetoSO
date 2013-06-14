@@ -78,7 +78,7 @@ int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
         }
     } while(!feof(fp));
 
-    return 0;
+    return j;
 }
 
 int main(int argc, char *argv[]) {
@@ -87,7 +87,6 @@ int main(int argc, char *argv[]) {
     process p_list[SHM_BASE_PROC_NUMBER];
     int p_count;
     const char* filename;
-    int status;
 
     int *pshm, *pp_list; 
     int idshm;
@@ -108,8 +107,10 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    status = parse_process_list(p_list, SHM_BASE_PROC_NUMBER, fp);
+    p_count = parse_process_list(p_list, SHM_BASE_PROC_NUMBER, fp);
+    fclose(fp);
 
+    // Sample code
     proc_pretty_printer(p_list[0]);
     proc_pretty_printer(p_list[1]);
     
@@ -150,8 +151,6 @@ int main(int argc, char *argv[]) {
     }   
 
     pp_list = pshm+2*sizeof(int);
-
-    fclose(fp);
 
     return 0;
 }
