@@ -82,18 +82,15 @@ int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
 
 int main(int argc, char *argv[]) {
 
-    // Alexandre's variables
     FILE *fp;
     process p_list[SHM_BASE_PROC_NUMBER];
+    int p_count;
     const char* filename;
     int status;
 
     int *pshm, *pp_list; 
     int idshm;
     int shm_status = 1;
-
-    process *p_list;
-    int p_count;
 
     int i, j;
     
