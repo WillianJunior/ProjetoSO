@@ -12,7 +12,7 @@ struct process {
 	unsigned int argc;
 	unsigned long max_time;
 	unsigned int n_proc;
-	char *argv[PROC_ARGV_SIZE];
+	char argv[PROC_ARGV_SIZE];
 };
 
 #endif
