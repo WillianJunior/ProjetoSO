@@ -1,0 +1,12 @@
+% Comentário 1
+filename=./helloworld
+params=
+max_time=00:05:00
+n_proc=4
+
+% Comentário 2
+filename=./fibonacci
+params=10
+max_time=00:02:00
+n_proc=5
+

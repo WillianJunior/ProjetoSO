@@ -6,13 +6,51 @@
 
 typedef struct process process;
 
-int parse_process_list(struct process** p_list, const FILE* fp) {
+int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
     char str[MAX_LINE_LENGTH];
+    char filename[MAX_LINE_LENGTH];
+    char params[MAX_LINE_LENGTH];
+    char max_time[MAX_LINE_LENGTH];
+    char num_proc[MAX_LINE_LENGTH];
+    char *aux;
+    int i, j;
 
-    fgets(&str, MAX_LINE_LENGTH, fp);
+    i = 0;
+    j = 0;
+    do { 
+        if(fgets(str, MAX_LINE_LENGTH, fp)) {
+            if(str[0] == '%') continue;
+            aux = strtok(str, "= ");
+            if(aux[0] == '\n') continue;
+            aux = strtok(NULL, "= ");
+            aux[strlen(aux)-1] = '\0';
+            switch(i) {
+                case 0:
+                    printf("filename: %s\n", aux);
+                    i++;
+                    break;
+                case 1:
+                    printf("params:%s\n", aux);
+                    i++;
+                    break;
+                case 2:
+                    printf("max_time: %s\n", aux);
+                    i++;
+                    break;
+                default:
+                    printf("n_proc: %s\n", aux);
+                    i=0;
+            }
+            if((i == 0) && (j < size - 1)) {
+                //(p_list + j)->exec_path = 
+                j++;
+            }
+        } else {
+            
+        }
+    } while(!feof(fp));
 
-
-
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -25,6 +63,8 @@ int main(int argc, char *argv[]) {
 
     // Willian's variables
     process x[10];
+    int idshm;
+    int *pshm;
     
     if(argc < 2) {
         fprintf(stderr, "Usage: so_submit <process file>.\n");
@@ -33,13 +73,13 @@ int main(int argc, char *argv[]) {
 
     filename = argv[1];
 
-    fp = fopen(filename);
+    fp = fopen(filename, "r");
     if(!fp) {
         fprintf(stderr, "Can't open specified file: <%s>.\n", filename);
         exit(1);
     }
 
-    status = parse_process_list(fp, &p_list);
+    status = parse_process_list(&p_list, fp);
 
     if ((idshm = shmget(0x1223, sizeof(int),IPC_CREAT|0x1ff)) < 0) { 
     	printf("erro na criacao da fila\n"); exit(1);
