@@ -81,14 +81,25 @@ int main(int argc, char *argv[]) {
 
     status = parse_process_list(&p_list, fp);
 
-    if ((idshm = shmget(0x1223, sizeof(int),IPC_CREAT|0x1ff)) < 0) { 
-    	printf("erro na criacao da fila\n"); exit(1);
+    /*************************************************/
+    /** shared mem structure:						**/
+    /*************************************************/
+    /** actual size of process vector				**/
+    /** process space in use 						**/
+    /** process vector								**/
+    /*************************************************/
+
+    if ((idshm = shmget(SHM_KEY, 2*sizeof(int) + SHM_BASE_PROC_NUMBER*sizeof(process),IPC_CREAT|0x1ff)) < 0) { 
+    	fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno));
+    	exit(1);
     }
 
 	pshm = (int *) shmat(idshm, (char *)0, 0);
 	if (pshm == (int *)-1) { 
-		printf("erro no attach\n"); exit(1);
+		fprintf(stderr, "Error attaching shared mem: \n%s\n", strerror(errno));
 	}
+
+
 
     return 0;
 }
