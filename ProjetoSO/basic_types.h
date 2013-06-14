@@ -1,5 +1,5 @@
-#ifndef BASIC_TYPES
-#define BASIC_TYPES
+#ifndef BASIC_TYPES_H
+#define BASIC_TYPES_H
 
 #define SHM_KEY 0x1927
 #define SHM_BASE_PROC_NUMBER 50
