@@ -33,14 +33,14 @@ int main(int argc, char *argv[]) {
     if ((idshm = shmget(SHM_KEY, 2*sizeof(int) + SHM_BASE_PROC_NUMBER*sizeof(process),IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
     	// if the shm return error and it is not already exist
         if (errno != EEXIST) {
-            fprintf(stderr, "Error creating shared mem: \n%s\n", (char*)strerror(errno));
+            fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno));
     	    exit(1);
         }
 
         // if the shm already exists we get the id only
         shm_status = 0;
         if ((idshm = shmget(SHM_KEY, 2*sizeof(int) + SHM_BASE_PROC_NUMBER*sizeof(process),0x1ff)) < 0) { 
-            fprintf(stderr, "Error creating shared mem: \n%s\n", (char*)strerror(errno));
+            fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno));
             exit(1);
         }
     }
@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     // attatch the shared mem
 	pshm = (int *) shmat(idshm, (char *)0, 0);
 	if (pshm == (int *)-1) { 
-		fprintf(stderr, "Error attaching shared mem: \n%s\n", (char*)strerror(errno));
+		fprintf(stderr, "Error attaching shared mem: \n%s\n", strerror(errno));
 	}
 
     // table all size and used size variables initialized if ti hasn't been already
