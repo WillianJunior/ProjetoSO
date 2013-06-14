@@ -9,7 +9,6 @@
 
 struct process {
 	char exec_path[PROC_EXEC_PATH_SIZE];
-	unsigned int argc;
 	unsigned long max_time;
 	unsigned int n_proc;
 	char argv[PROC_ARGV_SIZE];
