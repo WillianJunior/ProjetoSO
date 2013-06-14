@@ -7,6 +7,6 @@ n_proc=4
 % Comentário 2
 filename=./fibonacci
 params=10
-max_time=00:02:00
-n_proc=5
+max_time=01:01:01
+n_proc=2
 

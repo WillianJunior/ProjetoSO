@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "so_submit.h"
 
 typedef struct process process;
@@ -27,17 +28,17 @@ int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
             aux[strlen(aux)-1] = '\0';
             switch(i) {
                 case 0:
-                    printf("filename: %s\n", aux);
+                    //printf("filename: %s\n", aux);
                     i++;
                     strcpy(filename, aux);
                     break;
                 case 1:
-                    printf("params:%s\n", aux);
+                    //printf("params:%s\n", aux);
                     i++;
                     strcpy(params, aux);
                     break;
                 case 2:
-                    printf("max_time: %s\n", aux);
+                    //printf("max_time: %s\n", aux);
                     if(strlen(aux) != 8) {
                         fprintf(stderr, "Parsing error.\n");
                         exit(1);
@@ -46,7 +47,7 @@ int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
                     i++;
                     break;
                 default:
-                    printf("n_proc: %s\n", aux);
+                    //printf("n_proc: %s\n", aux);
                     for(k=0; k<strlen(aux); k++) {
                         if(!isdigit(aux[k])) {
                             fprintf(stderr, "Parsing error.\n");
@@ -108,6 +109,9 @@ int main(int argc, char *argv[]) {
     }
 
     status = parse_process_list(p_list, SHM_BASE_PROC_NUMBER, fp);
+
+    proc_pretty_printer(p_list[0]);
+    proc_pretty_printer(p_list[1]);
     
     /*************************************************/
     /** shared mem structure:						**/
