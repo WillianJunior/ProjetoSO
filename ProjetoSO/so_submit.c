@@ -91,6 +91,8 @@ int main(int argc, char *argv[]) {
     int *pshm, *pp_list; 
     int idshm;
     int shm_status = 1;
+    int *shm_psize;
+    int *shm_pcounter;
 
     int i, j;
     
@@ -111,8 +113,8 @@ int main(int argc, char *argv[]) {
     fclose(fp);
 
     // Sample code
-    proc_pretty_printer(p_list[0]);
-    proc_pretty_printer(p_list[1]);
+    proc_pretty_printer(p_list[2]);
+    proc_pretty_printer(p_list[3]);
     
     /*************************************************/
     /** shared mem structure:						**/
@@ -148,9 +150,21 @@ int main(int argc, char *argv[]) {
     if (shm_status) {
         *(pshm) = SHM_BASE_PROC_NUMBER;
         *(pshm+sizeof(int)) = 0;
-    }   
+    } else {
+        shm_psize = (pshm);
+        shm_pcounter = (pshm+sizeof(int));
+    }
 
     pp_list = pshm+2*sizeof(int);
+
+    // push the processes read into shared memory's process vector
+    for (i=0; i<p_count; i++) {
+        memcpy(pp_list+i*sizeof(process)+(*shm_pcounter), &p_list[i], sizeof(process));
+        (*shm_pcounter)++;
+    }
+
+    memcpy(&p_list[8], &pp_list[0], sizeof(process));
+    proc_pretty_printer(p_list[8]);
 
     return 0;
 }
