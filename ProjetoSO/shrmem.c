@@ -1,8 +1,4 @@
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "so_submit.h"
+#include "shrmem.h"
 
 int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
     char str[PROC_EXEC_PATH_SIZE];
@@ -79,18 +75,68 @@ int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
     return j;
 }
 
+
+int *get_proc_shr_mem () {
+    
+    int *pshm; 
+    int *pshm_amap; 
+    int idshm;
+    int shm_status = 1;
+    int i;
+
+    /*************************************************/
+    /** shared mem structure:                       **/
+    /*************************************************/
+    /** actual size of process table                **/
+    /** process table space in use                  **/
+    /** mem alocation map                           **/
+    /** process table vector                        **/
+    /*************************************************/
+
+    // instanciate a new shared mem segment or get the id of the segment already instanciated
+    if ((idshm = shmget(SHM_KEY, 2*sizeof(int) + SHM_BASE_PROC_NUMBER*(sizeof(process) + sizeof(int)),IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
+        // if the shmget return error and it is not already exist
+        if (errno != EEXIST) {
+            fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno));
+            return NULL;
+        }
+
+        // if the shm already exists we get the id only
+        shm_status = 0;
+        if ((idshm = shmget(SHM_KEY, 2*sizeof(int) + SHM_BASE_PROC_NUMBER*(sizeof(process) + sizeof(int)),0x1ff)) < 0) { 
+            fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno)); // TODO: extract all prints from the function to the main
+            return NULL;
+        }
+    }
+
+    // attatch the shared mem
+    pshm = (int *) shmat(idshm, (char *)0, 0);
+    if (pshm == (int *)-1) { 
+        fprintf(stderr, "Error attaching shared mem: \n%s\n", strerror(errno));
+    }
+
+    // table all size and used size variables initialized if it hasn't been already
+    if (shm_status) {
+        *(pshm) = SHM_BASE_PROC_NUMBER;
+        *(pshm+sizeof(int)) = 0;
+
+        pshm_amap = pshm + 2*sizeof(int);
+
+        // initialize the allocation vector with all processes slots free
+        for (i=0; i<SHM_BASE_PROC_NUMBER; i++)
+            *(pshm_amap+i) = 0;
+    }
+
+    return pshm;
+
+}
+
 int main(int argc, char *argv[]) {
 
     FILE *fp;
     process p_list[SHM_BASE_PROC_NUMBER];
-    int p_count;
+    int p_count, *pp_list, *shm_pcounter;
     const char* filename;
-
-    int *pshm, *pp_list; 
-    int idshm;
-    int shm_status = 1;
-    int *shm_psize;
-    int *shm_pcounter;
 
     int i, j;
     
@@ -113,47 +159,9 @@ int main(int argc, char *argv[]) {
     // Sample code
     proc_pretty_printer(p_list[2]);
     proc_pretty_printer(p_list[3]);
+
     
-    /*************************************************/
-    /** shared mem structure:						**/
-    /*************************************************/
-    /** actual size of process table				**/
-    /** process table space in use 					**/
-    /** process table vector						**/
-    /*************************************************/
-
-    // instanciate a new shared mem segment or get the id of the segment already instanciated
-    if ((idshm = shmget(SHM_KEY, 2*sizeof(int) + SHM_BASE_PROC_NUMBER*sizeof(process),IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
-    	// if the shm return error and it is not already exist
-        if (errno != EEXIST) {
-            fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno));
-    	    exit(1);
-        }
-
-        // if the shm already exists we get the id only
-        shm_status = 0;
-        if ((idshm = shmget(SHM_KEY, 2*sizeof(int) + SHM_BASE_PROC_NUMBER*sizeof(process),0x1ff)) < 0) { 
-            fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno));
-            exit(1);
-        }
-    }
-
-    // attatch the shared mem
-	pshm = (int *) shmat(idshm, (char *)0, 0);
-	if (pshm == (int *)-1) { 
-		fprintf(stderr, "Error attaching shared mem: \n%s\n", strerror(errno));
-	}
-
-    // table all size and used size variables initialized if ti hasn't been already
-    if (shm_status) {
-        *(pshm) = SHM_BASE_PROC_NUMBER;
-        *(pshm+sizeof(int)) = 0;
-    } else {
-        shm_psize = (pshm);
-        shm_pcounter = (pshm+sizeof(int));
-    }
-
-    pp_list = pshm+2*sizeof(int);
+    pp_list = get_proc_shr_mem();
 
     // push the processes read into shared memory's process vector
     for (i=0; i<p_count; i++) {
@@ -161,7 +169,7 @@ int main(int argc, char *argv[]) {
         (*shm_pcounter)++;
     }
 
-    memcpy(&p_list[8], &pp_list[0], sizeof(process));
+    memcpy(&p_list[8], &pp_list[2], sizeof(process));
     proc_pretty_printer(p_list[8]);
 
     return 0;

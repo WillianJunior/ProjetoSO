@@ -14,4 +14,6 @@ struct process {
 	char argv[PROC_ARGV_SIZE];
 };
 
+typedef struct process process;
+
 #endif
