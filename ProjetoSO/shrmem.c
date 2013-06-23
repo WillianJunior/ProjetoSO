@@ -84,15 +84,6 @@ int *get_proc_shr_mem () {
     int shm_status = 1;
     int i;
 
-    /*************************************************/
-    /** shared mem structure:                       **/
-    /*************************************************/
-    /** actual size of process table                **/
-    /** process table space in use                  **/
-    /** mem alocation map                           **/
-    /** process table vector                        **/
-    /*************************************************/
-
     // instanciate a new shared mem segment or get the id of the segment already instanciated
     if ((idshm = shmget(SHM_KEY, 2*sizeof(int) + SHM_BASE_PROC_NUMBER*(sizeof(process) + sizeof(int)),IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
         // if the shmget return error and it is not already exist
@@ -118,7 +109,7 @@ int *get_proc_shr_mem () {
     // table all size and used size variables initialized if it hasn't been already
     if (shm_status) {
         *(pshm) = SHM_BASE_PROC_NUMBER;
-        *(pshm+sizeof(int)) = 0;
+        *(pshm+sizeof(int)) = SHM_BASE_PROC_NUMBER;
 
         pshm_amap = pshm + 2*sizeof(int);
 
@@ -129,6 +120,38 @@ int *get_proc_shr_mem () {
 
     return pshm;
 
+}
+
+int add_proc_shr_mem (int *pshm, process *proc) {
+    
+    int size;
+    int free_spots;
+    int *alloc_vector;
+    int *proc_vector;
+    int i;
+
+    // find a free spot, if exists
+    free_spots = *(pshm+sizeof(int));
+    if(free_spots == 0)
+        return -1;
+    
+    size = *pshm;
+    alloc_vector = pshm+2*sizeof(int);
+
+    for (i=0; i<size; i++) 
+        if(alloc_vector[i]==0)
+            break;
+
+    // allocate a spot for the process
+    alloc_vector[i] = 1;
+    *pshm = *pshm-1;
+
+    // put the process in the process table
+    proc_vector = alloc_vector + SHM_BASE_PROC_NUMBER * sizeof(int);
+    memcpy(proc_vector+i*sizeof(process), proc, sizeof(process));
+
+    // returns the number of free spots available
+    return free_spots;
 }
 
 int main(int argc, char *argv[]) {
@@ -156,20 +179,23 @@ int main(int argc, char *argv[]) {
     p_count = parse_process_list(p_list, SHM_BASE_PROC_NUMBER, fp);
     fclose(fp);
 
-    // Sample code
-    proc_pretty_printer(p_list[2]);
-    proc_pretty_printer(p_list[3]);
-
     
     pp_list = get_proc_shr_mem();
 
+    proc_pretty_printer(p_list[0]);
+
+
     // push the processes read into shared memory's process vector
     for (i=0; i<p_count; i++) {
-        memcpy(pp_list+i*sizeof(process)+(*shm_pcounter), &p_list[i], sizeof(process));
-        (*shm_pcounter)++;
+        if (add_proc_shr_mem(pp_list, &p_list[i]) < 0) {
+            printf("erro\n");
+            exit(1);
+        }
+        // remove this VV
+        
     }
 
-    memcpy(&p_list[8], &pp_list[2], sizeof(process));
+    memcpy(&p_list[8], pp_list+(2+SHM_BASE_PROC_NUMBER)*sizeof(int), sizeof(process));
     proc_pretty_printer(p_list[8]);
 
     return 0;

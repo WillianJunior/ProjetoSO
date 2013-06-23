@@ -13,6 +13,15 @@
 
 #include "basic_types.h"
 
+	/*************************************************/
+    /** shared mem structure:                       **/
+    /*************************************************/
+    /** actual size of process table                **/
+    /** process table space in use                  **/
+    /** mem alocation map                           **/
+    /** process table vector                        **/
+    /*************************************************/
+
 /**********************************************************/
 /*** 				get_proc_shr_mem 					***/
 /**********************************************************/
@@ -21,12 +30,19 @@
 /*** returns the pointer for the shared memory.			***/
 /**********************************************************/
 /*** Returns by value: pshm								***/
-/*** Returns by reference:  ***/
-/***  ***/
+/*** Returns NULL on failure							***/
 /**********************************************************/
-// instanciate and attach a process shared memory. returns the shm id
 int *get_proc_shr_mem ();
 
-int add_proc_shr_mem(process *proc, int *pshm);
+/**********************************************************/
+/*** 				add_proc_shr_mem 					***/
+/**********************************************************/
+/*** Insert a process in the process table on the		***/
+/*** shared memory referenced by the pshm pointer		***/
+/**********************************************************/
+/*** Returns 0 on success								***/
+/*** Returns -1 on failure								***/
+/**********************************************************/
+int add_proc_shr_mem (int *pshm, process *proc);
 
 #endif
