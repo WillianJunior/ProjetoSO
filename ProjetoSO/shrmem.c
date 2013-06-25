@@ -109,7 +109,7 @@ int *get_proc_shr_mem_access () {
     // table all size and used size variables initialized if it hasn't been already
     if (shm_status) {
         *(pshm) = SHM_BASE_PROC_NUMBER;
-        *(pshm+sizeof(int)) = SHM_BASE_PROC_NUMBER;
+        *(pshm+sizeof(int)) = 0;
         *(pshm+2*sizeof(int)) = pshm+(SHM_BASE_PROC_NUMBER+3)*sizeof(int);
 
         pshm_amap = pshm + 3*sizeof(int);
@@ -125,38 +125,31 @@ int *get_proc_shr_mem_access () {
 
 int add_proc_shr_mem (int *pshm, process *proc) {
     
-    int size;
-    int free_spots;
     int *alloc_vector;
     int *proc_vector;
-    int *first_process;
+    int first_process;
+    int first_free_process;
     int prev_proc;
     int i;
-
-    // find a free spot, if exists
-    free_spots = *(pshm+sizeof(int));
-    if(free_spots == 0)
-        return -1;
     
-    size = *pshm;
+    // check if there is any free process
+    if (first_free_process = pshm+sizeof(int) < 0)
+        return -1;
+
+    first_process = pshm+2*sizeof(int);
     alloc_vector = pshm+3*sizeof(int);
 
-    for (i=0; i<size; i++) 
-        if(alloc_vector[i]==0)
-            break;
-
-    // allocate a spot for the process
-    alloc_vector[i] = 1;
-    *pshm = *pshm-1;
+    // find out where o put the process
+    proc_vector = alloc_vector + SHM_BASE_PROC_NUMBER * sizeof(int);
+    while (*(proc_vector))
 
     // put the process in the process table
-    proc_vector = alloc_vector + SHM_BASE_PROC_NUMBER * sizeof(int);
     memcpy(proc_vector+i*sizeof(process), proc, sizeof(process));
 
     // rearrange the linked list pointers
     prev_proc = proc_vector + (SHM_BASE_PROC_NUMBER - free_spots)*sizeof(process);
     if (prev_proc == proc_vector)
-        proc->next = NULL;
+        proc->next = -1;
     else {
         // from here!!!
         
