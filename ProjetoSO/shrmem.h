@@ -74,6 +74,6 @@ int remove_proc_shr_mem (int *pshm, int index);
 /*** Returns 0 on success								***/
 /*** Returns -1 on failure								***/
 /**********************************************************/
-int get_proc_shr_mem (int *pshm, int index, process *proc);
+int get_proc_shr_mem (int *pshm, int index, process **proc);
 
 #endif
