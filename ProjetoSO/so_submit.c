@@ -6,11 +6,52 @@
 
 int get_proc_shr_mem (int *pshm, int index, process **proc);
 
+int remove_proc_shr_mem (int *pshm, int index);
+
 int get_proc_shr_mem(int *pshm, int index, process **proc) {
+
+    /* prevents segmentation faults */
+    if(index >= SHM_BASE_PROC_NUMBER) {
+        errno = EADDRNOTAVAIL;
+        return -1;
+    }
+
     /* proc equals the beginning of the processes vector (base) plus offset (index) */
     (*proc) = (process *) pshm + (3+SHM_BASE_PROC_NUMBER) * sizeof(int) + index;
 
     return (*proc)->in_use == 0 ? -1 : 0;
+}
+
+int remove_proc_shr_mem (int *pshm, int index) {
+    process *proc;
+    process *proc_vector;
+
+    /* prevents segmentation faults */
+    if(index >= SHM_BASE_PROC_NUMBER) {
+        errno = EADDRNOTAVAIL;
+        return -1;
+    }
+
+    /* proc_vector points to the beginning of the processes' vector */
+    proc_vector = (process *) pshm + (3+SHM_BASE_PROC_NUMBER) * sizeof(int);
+    
+    /* proc points to the process to be removed */
+    proc = proc_vector + index;
+    /* if there's no process in the specified position, returns error */
+    if (proc->in_use == 0) {
+        return -1;
+    }
+
+    /* updates references */
+    (proc_vector + proc->prev)->next = proc->next;
+    (proc_vector + proc->next)->prev = proc->prev;
+
+    /* removes proc */
+    proc->in_use = 0;
+    proc->next = -1;
+    proc->prev = -1;
+
+    return 0;
 }
 
 int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
