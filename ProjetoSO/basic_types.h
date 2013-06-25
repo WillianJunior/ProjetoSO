@@ -14,6 +14,7 @@ struct process {
 	char argv[PROC_ARGV_SIZE];
 	float priority_coef;
 	int in_use;
+	int prev;
 	int next;
 };
 
