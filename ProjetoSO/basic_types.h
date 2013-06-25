@@ -12,6 +12,7 @@ struct process {
 	unsigned long max_time;
 	unsigned int n_proc;
 	char argv[PROC_ARGV_SIZE];
+	int in_use;
 	int next;
 };
 
