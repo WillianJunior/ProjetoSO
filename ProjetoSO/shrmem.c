@@ -79,25 +79,12 @@ int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
 int *get_proc_shr_mem_access () {
     
     int *pshm; 
-    int *pshm_amap; 
     int idshm;
-    int shm_status = 1;
-    int i;
 
     // instanciate a new shared mem segment or get the id of the segment already instanciated
-    if ((idshm = shmget(SHM_KEY, 3*sizeof(int) + SHM_BASE_PROC_NUMBER*(sizeof(process) + sizeof(int)),IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
-        // if the shmget return error and it is not already exist
-        if (errno != EEXIST) {
-            fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno));
-            return NULL;
-        }
-
-        // if the shm already exists we get the id only
-        shm_status = 0;
-        if ((idshm = shmget(SHM_KEY, 3*sizeof(int) + SHM_BASE_PROC_NUMBER*(sizeof(process) + sizeof(int)),0x1ff)) < 0) { 
-            fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno)); // TODO: extract all prints from the function to the main
-            return NULL;
-        }
+    if ((idshm = shmget(SHM_KEY, SHM_BASE_PROC_NUMBER*sizeof(process),IPC_CREAT|0x1ff)) < 0) { 
+        fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno));
+        return NULL;
     }
 
     // attatch the shared mem
@@ -106,58 +93,13 @@ int *get_proc_shr_mem_access () {
         fprintf(stderr, "Error attaching shared mem: \n%s\n", strerror(errno));
     }
 
-    // table all size and used size variables initialized if it hasn't been already
-    if (shm_status) {
-        *(pshm) = SHM_BASE_PROC_NUMBER;
-        *(pshm+sizeof(int)) = 0;
-        *(pshm+2*sizeof(int)) = pshm+(SHM_BASE_PROC_NUMBER+3)*sizeof(int);
-
-        pshm_amap = pshm + 3*sizeof(int);
-
-        // initialize the allocation vector with all processes slots free
-        for (i=0; i<SHM_BASE_PROC_NUMBER; i++)
-            *(pshm_amap+i) = 0;
-    }
-
     return pshm;
 
 }
 
 int add_proc_shr_mem (int *pshm, process *proc) {
     
-    int *alloc_vector;
-    int *proc_vector;
-    int first_process;
-    int first_free_process;
-    int prev_proc;
-    int i;
-    
-    // check if there is any free process
-    if (first_free_process = pshm+sizeof(int) < 0)
-        return -1;
 
-    first_process = pshm+2*sizeof(int);
-    alloc_vector = pshm+3*sizeof(int);
-
-    // find out where o put the process
-    proc_vector = alloc_vector + SHM_BASE_PROC_NUMBER * sizeof(int);
-    while (*(proc_vector))
-
-    // put the process in the process table
-    memcpy(proc_vector+i*sizeof(process), proc, sizeof(process));
-
-    // rearrange the linked list pointers
-    prev_proc = proc_vector + (SHM_BASE_PROC_NUMBER - free_spots)*sizeof(process);
-    if (prev_proc == proc_vector)
-        proc->next = -1;
-    else {
-        // from here!!!
-        
-    }
-    *(pshm+sizeof(int)) = *(pshm+sizeof(int)) - 1;
-
-    // returns the number of free spots available
-    return free_spots;
 }
 
 int main(int argc, char *argv[]) {
