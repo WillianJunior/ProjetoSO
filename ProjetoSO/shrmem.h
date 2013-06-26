@@ -1,6 +1,8 @@
 #ifndef SHR_MEM_H
 #define SHR_MEM_H
 
+#define SHM_KEY 0x1927
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
