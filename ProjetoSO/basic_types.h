@@ -7,6 +7,11 @@
 #define PROC_EXEC_PATH_SIZE 100
 #define PROC_ARGV_SIZE 100
 
+enum status {
+	RUNNING,
+	PENDING
+};
+
 struct process {
 	char exec_name[PROC_EXEC_NAME_SIZE];
 	char exec_path[PROC_EXEC_PATH_SIZE];
@@ -14,7 +19,7 @@ struct process {
 	unsigned int n_proc;
 	char argv[PROC_ARGV_SIZE];
 	float priority_coef;
-	int in_use;
+	enum status status;
 };
 
 typedef struct process process;
