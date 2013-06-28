@@ -1,13 +1,21 @@
 #ifndef BASIC_TYPES_H
 #define BASIC_TYPES_H
 
+#include <sys/sem.h>
+
 #define SHM_BASE_PROC_NUMBER 50
-#define BITMAP_BLOCK_SIZE    sizeof(unsigned char) * 8
-#define BITMAP_SIZE          SHM_BASE_PROC_NUMBER / BITMAP_BLOCK_SIZE
 
 #define PROC_EXEC_NAME_SIZE 50
 #define PROC_EXEC_PATH_SIZE 100
 #define PROC_ARGV_SIZE 100
+
+#define FREE_PROC_SEM_KEY 0x1927
+#define SCH_SPW_MSGQ_KEY 0x1927
+
+enum status {
+	RUNNING,
+	PENDING
+};
 
 struct process {
 	char exec_name[PROC_EXEC_NAME_SIZE];
@@ -20,8 +28,11 @@ struct process {
 	struct process* next;
 	int prev_index;
 	int next_index;
+	enum status status;
 };
 
 typedef struct process process;
+
+struct sembuf sem_op_s;
 
 #endif

@@ -1,35 +1,36 @@
 #include "spawner.h"
 
 int pid;
-int zombie_killer_init = 1;
-int id_zombie_sem;
-struct sembuf sem_op;
 
 int main(int argc, char const *argv[]) {
 	
+	int idsem_free_proc;
 	int idqueue;
 	int state;
 	process proc;
 
-
-	if ((id_zombie_sem = semget(SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
-		printf("erro na criacao do semaforo\n"); 
+	// start the semaphore
+	if ((idsem_free_proc = semget(FREE_PROC_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
+		printf("Error obtaining the semaphore: %s\n", strerror(errno)); 
 		exit(1);
 	}
 
-
-	if (idqueue = msgget(MSGQ_KEY, IPC_CREAT|0x1FF) < 0) {
+	// access the msg queue from the spawner
+	if ((idqueue = msgget(SCH_SPW_MSGQ_KEY, IPC_CREAT|0x1FF)) < 0) {
 		printf( "erro na obtencao da fila\n" );
 		exit(1);
 	}
 
+	// create the zombie killer 
+	signal(SIGALRM, zombie_killer);
+	alarm(ZOMBIE_KILLER_TIMEOUT);
 	while (1) {
 		// get the process request from the message queue
 		printf("[Breeder] Waiting a new process...\n");
-		while (msgrcv(idqueue, &proc, sizeof(process), 0, 0) < 0)
-			printf("error: %s\n", strerror(errno));
+		while (msgrcv(idqueue, &proc, sizeof(process), 0, 0) < 0);
 
 		printf("[Breeder] Process received\n");
+		proc_pretty_printer(proc);
 
 		// fork himself to a wrapper to set and treat the timeout
 		if ((pid = fork()) == 0) {
@@ -37,8 +38,7 @@ int main(int argc, char const *argv[]) {
 			// fork the wrapper to execute the process
 			if ((pid = fork()) == 0) {
 				// execute the process from the fork of the wrapper
-				printf("[Executer] Now will execute the new programm: \n");
-				proc_pretty_printer(proc);
+				printf("[Executer] Now will execute the new program\n");
 				execl(proc.exec_path, proc.exec_name, proc.argv, (char *) 0);
 			}
 
@@ -46,70 +46,35 @@ int main(int argc, char const *argv[]) {
 			printf("[Wrapper] Setting timeout alarm\n");
 			signal(SIGALRM, proc_killer);
 			alarm(proc.max_time);
-			printf("[Wrapper] Waiting for the programm to finish...\n");
+			printf("[Wrapper] Waiting for the program to finish...\n");
 			wait(&state);
-			printf("[Wrapper] State: %d\n", state);
 			alarm(0);
-			printf("[Wrapper] Programm finished\n");
+			printf("[Wrapper] State: %d\n", state);
+			printf("[Wrapper] Program finished\n");
+			// send the signal of free process
+			sem_op(idsem_free_proc, proc.n_proc);
 			return state;
 		}
-
-		// start the zombie killer if it is asleep
-		if (zombie_killer_init) {
-			signal(SIGALRM, zombie_killer);
-			alarm(ZOMBIE_KILLER_TIMEOUT);
-			zombie_killer_init = 0;
-		}
 	}
-
 	return 0;
 }
 
-void check_zero_sem () {
-	sem_op.sem_num = 0;
-	sem_op.sem_op = 0;
-	sem_op.sem_flg = 0;
-	if ( semop(id_zombie_sem, &sem_op, 1) < 0)
-		printf("erro no p=%d\n", errno);
-}
-
-void p_sem () {
-	sem_op.sem_num = 0;
-	sem_op.sem_op = 1;
-	sem_op.sem_flg = 0;
-	if ( semop(id_zombie_sem, &sem_op, 1) < 0)
-		printf("erro no p=%d\n", errno);
-}
-
-void v_sem () {
-	sem_op.sem_num = 0;
-	sem_op.sem_op = -1;
-	sem_op.sem_flg = 0;
-	if ( semop(id_zombie_sem, &sem_op, 1) < 0)
-		printf("erro no p=%d\n", errno);
-}
-
 void zombie_killer() {
-	// using this semaphore we avoid the case where the zombie killer kill a zombie grandchild near the wait in line 50
-	// is it possible?
-	// optmize the zombie killer to only call it when there is a zombie process 
-	p_sem();
 	int removed;
 	int state;
-	printf("[Zombie Killer] Let's kill some zombies!!\n");
-	do {
-		if ((removed = waitpid(-1, &state, WNOHANG)) > 0)
-			printf("[Zombie Killer] Killed zombie process %d\n", removed);
-	} while (removed > 0);
 
-	v_sem();
+	printf("[Zombie Killer] Let's kill some zombies!!\n");
+	removed = waitpid(-1, &state, WNOHANG);
+	while (removed > 0) {
+		printf("[Zombie Killer] Killed zombie process %d\n", removed);
+		removed = waitpid(-1, &state, WNOHANG);
+	}
 
 	// reset the zombie killer timeout
 	alarm(ZOMBIE_KILLER_TIMEOUT);
 }
 
 void proc_killer () {
-	check_zero_sem();
-	printf("[Process Killer] forced kill -9 on process %d\n", pid);
+	printf("[Process Killer] forced kill on process %d\n", pid);
 	kill(pid, SIGKILL);
 }

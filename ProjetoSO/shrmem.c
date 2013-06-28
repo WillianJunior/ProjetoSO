@@ -11,7 +11,12 @@
 
 #include "shrmem.h"
 
-#define BITMAP_KEY 0x1928 // Private key. Keep it here.
+/**
+ * Private things.
+ */
+#define BITMAP_BLOCK_SIZE    sizeof(unsigned char) * 8
+#define BITMAP_SIZE          SHM_BASE_PROC_NUMBER / BITMAP_BLOCK_SIZE
+#define BITMAP_KEY 0x1928
 
 /**
  * Not exported functions.

@@ -4,13 +4,12 @@
 #include <string.h>
 
 #include "basic_types.h"
-#include "spawner.h"
 
 int main () {
 
 	int idqueue;
 
-	if (idqueue = msgget(MSGQ_KEY, 0x1FF) < 0) {
+	if ((idqueue = msgget(SCH_SPW_MSGQ_KEY, 0x1FF)) < 0) {
 		printf( "erro na obtencao da fila\n" );
 	}
 
@@ -21,7 +20,6 @@ int main () {
 	proc.n_proc = 4;
 	strcpy(proc.argv, "");
 	proc.priority_coef = 15.0;
-	proc.in_use = 1;
 
 	msgsnd(idqueue, &proc, sizeof(process), 0);
 
