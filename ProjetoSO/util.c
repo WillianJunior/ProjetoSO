@@ -1,8 +1,6 @@
-#include <stdio.h>
-
 #include "util.h"
 
-void proc_pretty_printer(struct process proc) {
+void proc_pretty_printer (struct process proc) {
 
 	printf("Process: \n");
 	printf("exec_path: %s\n", proc.exec_name);
@@ -12,3 +10,12 @@ void proc_pretty_printer(struct process proc) {
 	printf("argv: %s\n", proc.argv);
 
 }
+
+void sem_op (int idsem_free_proc, int n) {
+	sem_op_s.sem_num = 0;
+	sem_op_s.sem_op = n;
+	sem_op_s.sem_flg = 0;
+	if ( semop(idsem_free_proc, &sem_op_s, 1) < 0)
+		printf("erro no p=%d\n", errno);
+}
+

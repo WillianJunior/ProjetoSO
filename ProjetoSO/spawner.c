@@ -8,7 +8,7 @@ int main(int argc, char const *argv[]) {
 	int state;
 	process proc;
 
-	if (idqueue = msgget(MSGQ_KEY, IPC_CREAT|0x1FF) < 0) {
+	if ((idqueue = msgget(SCH_SPW_MSGQ_KEY, IPC_CREAT|0x1FF)) < 0) {
 		printf( "erro na obtencao da fila\n" );
 		exit(1);
 	}
@@ -19,7 +19,7 @@ int main(int argc, char const *argv[]) {
 	while (1) {
 		// get the process request from the message queue
 		printf("[Breeder] Waiting a new process...\n");
-		while (msgrcv(idqueue, &proc, sizeof(process), 0, 0) < 0)
+		while (msgrcv(idqueue, &proc, sizeof(process), 0, 0) < 0);
 
 		printf("[Breeder] Process received\n");
 		proc_pretty_printer(proc);

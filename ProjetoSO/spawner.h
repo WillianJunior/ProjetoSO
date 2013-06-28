@@ -17,8 +17,6 @@
 #include "util.h"
 #include "basic_types.h"
 
-#define MSGQ_KEY 0x1927
-#define SEM_KEY 0x1927
 #define ZOMBIE_KILLER_TIMEOUT 20
 
 void zombie_killer();
