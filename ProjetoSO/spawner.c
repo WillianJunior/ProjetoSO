@@ -51,8 +51,8 @@ int main(int argc, char const *argv[]) {
 			alarm(0);
 			printf("[Wrapper] State: %d\n", state);
 			printf("[Wrapper] Program finished\n");
+			// send the signal of free process
 			sem_op(idsem_free_proc, proc.n_proc);
-			printf("sem: %d\n", semctl(idsem_free_proc, 0, GETVAL));
 			return state;
 		}
 	}
