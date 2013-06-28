@@ -15,55 +15,23 @@
 
 #include "basic_types.h"
 
-	/**************************************************/
-    /** shared mem structure:                        **/
-    /**************************************************/
-    /** process table vector                         **/
-    /**************************************************/
-	/** TODO!!!		 								 **/
-	/**************************************************/
+// COMMENTS ABOUT THE FUNCTIONS ARE TEMPORARILY IN 'shrmem.c'.
+process* get_proc_shr_mem();
 
-/**********************************************************/
-/*** 				get_proc_shr_mem_access				***/
-/**********************************************************/
-/*** If not instanciated, instanciate and attatch the	***/
-/*** process shared memory. If already instanciated, 	***/
-/*** returns the pointer for the shared memory.			***/
-/**********************************************************/
-/*** Returns by value: pshm								***/
-/*** Returns NULL on failure							***/
-/**********************************************************/
-int *get_proc_shr_mem_access ();
+process* malloc_proc_shr_mem();
 
-/**********************************************************/
-/*** 				add_proc_shr_mem 					***/
-/**********************************************************/
-/*** Insert a process in the process table on the		***/
-/*** shared memory referenced by the pshm pointer		***/
-/**********************************************************/
-/*** Returns 0 on success								***/
-/*** Returns -1 on failure								***/
-/**********************************************************/
-int add_proc_shr_mem (int *pshm, process *proc);
+process* get_first_proc();
 
-/**********************************************************/
-/***				remove_proc_shr_mem					***/
-/**********************************************************/
-/*** Remove the process referenced by a given index.	***/
-/**********************************************************/
-/*** Returns 0 on success 								***/
-/*** Returns -1 on failure								***/
-/**********************************************************/
-int remove_proc_shr_mem (int *pshm, int index);
+int set_first_proc(process* proc);
 
-/**********************************************************/
-/*** 				get_proc_shr_mem 					***/
-/**********************************************************/
-/*** Get the process referenced by a given index. 		***/
-/**********************************************************/
-/*** Returns 0 on success								***/
-/*** Returns -1 on failure								***/
-/**********************************************************/
-int get_proc_shr_mem (int *pshm, int index, process **proc);
+process* get_last_proc();
+
+int set_last_proc(process* proc);
+
+int index_proc(process* proc);
+
+process* next_proc(process* proc);
+
+process* last_proc(process* proc);
 
 #endif

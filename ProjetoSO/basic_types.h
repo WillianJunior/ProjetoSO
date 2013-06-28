@@ -2,6 +2,8 @@
 #define BASIC_TYPES_H
 
 #define SHM_BASE_PROC_NUMBER 50
+#define BITMAP_BLOCK_SIZE    sizeof(unsigned char) * 8
+#define BITMAP_SIZE          SHM_BASE_PROC_NUMBER / BITMAP_BLOCK_SIZE
 
 #define PROC_EXEC_NAME_SIZE 50
 #define PROC_EXEC_PATH_SIZE 100
@@ -14,7 +16,10 @@ struct process {
 	unsigned int n_proc;
 	char argv[PROC_ARGV_SIZE];
 	float priority_coef;
-	int in_use;
+	struct process* prev;
+	struct process* next;
+	int prev_index;
+	int next_index;
 };
 
 typedef struct process process;

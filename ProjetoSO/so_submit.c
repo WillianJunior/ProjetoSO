@@ -4,57 +4,7 @@
 
 #include "so_submit.h"
 
-int get_proc_shr_mem (int *pshm, int index, process **proc);
-
-int remove_proc_shr_mem (int *pshm, int index);
-
-int get_proc_shr_mem(int *pshm, int index, process **proc) {
-
-    /* prevents segmentation faults */
-    if(index >= SHM_BASE_PROC_NUMBER) {
-        errno = EADDRNOTAVAIL;
-        return -1;
-    }
-
-    /* proc equals the beginning of the processes vector (base) plus offset (index) */
-    (*proc) = (process *) pshm + (3+SHM_BASE_PROC_NUMBER) * sizeof(int) + index;
-
-    return (*proc)->in_use == 0 ? -1 : 0;
-}
-
-int remove_proc_shr_mem (int *pshm, int index) {
-    process *proc;
-    process *proc_vector;
-
-    /* prevents segmentation faults */
-    if(index >= SHM_BASE_PROC_NUMBER) {
-        errno = EADDRNOTAVAIL;
-        return -1;
-    }
-
-    /* proc_vector points to the beginning of the processes' vector */
-    proc_vector = (process *) pshm + (3+SHM_BASE_PROC_NUMBER) * sizeof(int);
-    
-    /* proc points to the process to be removed */
-    proc = proc_vector + index;
-    /* if there's no process in the specified position, returns error */
-    if (proc->in_use == 0) {
-        return -1;
-    }
-
-    /* updates references */
-    (proc_vector + proc->prev)->next = proc->next;
-    (proc_vector + proc->next)->prev = proc->prev;
-
-    /* removes proc */
-    proc->in_use = 0;
-    proc->next = -1;
-    proc->prev = -1;
-
-    return 0;
-}
-
-int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
+int parse_process_list(struct process **p_list, const size_t size, FILE* fp) {
     char str[PROC_EXEC_PATH_SIZE];
     char filename[PROC_EXEC_PATH_SIZE];
     char params[PROC_EXEC_PATH_SIZE];
@@ -64,7 +14,9 @@ int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
     int i, j, k;
     char hours[3], minutes[3], seconds[3];
     int n_proc;
+    process *p_aux;
 
+    (*p_list) = (process *) 0;
     i = 0;
     j = 0;
     do { 
@@ -72,7 +24,7 @@ int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
             if(str[0] == '%') continue;
             aux = strtok(str, "= ");
             if(aux[0] == '\n') continue;
-            aux = strtok(NULL, "= ");
+            aux = strtok(NULL, "=");
             aux[strlen(aux)-1] = '\0';
             switch(i) {
                 case 0:
@@ -105,8 +57,18 @@ int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
                     strcpy(num_proc, aux);
                     i=0;
             }
-            if((i == 0) && (j < size - 1)) {
-                strcpy(p_list[j].exec_path, filename);
+            if(i == 0) {
+                if(!(*p_list)) {
+                    (*p_list) = (process *) malloc(sizeof(process));
+                    (*p_list)->prev = (process *) 0;
+                    p_aux = (*p_list);
+                } else {
+                    p_aux->next = (process *) malloc(sizeof(process));
+                    p_aux->next->prev = p_aux;
+                    p_aux = p_aux->next;
+                }
+
+                strcpy(p_aux->exec_path, filename);
                 hours[0] = max_time[0]; 
                 hours[1] = max_time[1]; 
                 hours[2] = '\0';
@@ -116,34 +78,65 @@ int parse_process_list(struct process p_list[], const size_t size, FILE* fp) {
                 seconds[0] = max_time[6]; 
                 seconds[1] = max_time[7]; 
                 seconds[2] = '\0';
-                p_list[j].max_time = atoi(hours) * 3600 + atoi(minutes) * 60 + atoi(seconds);
-                p_list[j].n_proc = (n_proc = atoi(num_proc)) < 0 ? 0 : n_proc; 
-                strcpy(p_list[j].argv, params);
+                p_aux->max_time = atoi(hours) * 3600 + atoi(minutes) * 60 + atoi(seconds);
+                p_aux->n_proc = (n_proc = atoi(num_proc)) < 0 ? 0 : n_proc; 
+                strcpy(p_aux->argv, params);
+
+                p_aux->next = (process *) 0;
                 j++;
             }
-        } else {
-            
         }
     } while(!feof(fp));
 
     return j;
 }
 
+int print_proc_list(process *proc_list) {
+    while(proc_list) {
+        proc_pretty_printer(*proc_list);
+        proc_list = proc_list->next;
+    }
+    return 0;
+}
+
+/**
+ * Takes a list and appends it at the end of the table.
+ */
+int append_proc_list(process *proc_list) {
+    process *aux;
+
+    aux = get_last_proc();
+    while(proc_list) {
+        if (!aux) { // Empty list
+            aux = malloc_proc_shr_mem();
+            // Using memcpy because we can change 'struct process' flexibly.
+            // We can add or remove any field, as long as we keep:
+            //    prev, next, prev_index and next_index. :)
+            memcpy(aux, proc_list, sizeof(process));
+            set_first_proc(aux);
+        } else {
+            aux->next = malloc_proc_shr_mem();
+            memcpy(aux->next, proc_list, sizeof(process));
+            aux->next_index = index_proc(aux->next);
+            aux->next->prev = aux;
+            aux->next->prev_index = index_proc(aux);
+            aux = aux->next;
+        }
+
+        set_last_proc(aux);
+        proc_list = proc_list->next;
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
 
     FILE *fp;
-    process p_list[SHM_BASE_PROC_NUMBER];
+    process *p_list;
+
     int p_count;
     const char* filename;
 
-    int *pshm, *pp_list; 
-    int idshm;
-    int shm_status = 1;
-    int *shm_psize;
-    int *shm_pcounter;
-
-    int i, j;
-    
     if(argc < 2) {
         fprintf(stderr, "Usage: so_submit <process file>.\n");
         exit(1);
@@ -157,62 +150,11 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    p_count = parse_process_list(p_list, SHM_BASE_PROC_NUMBER, fp);
+    p_count = parse_process_list(&p_list, SHM_BASE_PROC_NUMBER, fp);
     fclose(fp);
 
-    // Sample code
-    proc_pretty_printer(p_list[2]);
-    proc_pretty_printer(p_list[3]);
-    
-    /*************************************************/
-    /** shared mem structure:						**/
-    /*************************************************/
-    /** actual size of process table				**/
-    /** process table space in use 					**/
-    /** process table vector						**/
-    /*************************************************/
-
-    // instanciate a new shared mem segment or get the id of the segment already instanciated
-    if ((idshm = shmget(SHM_KEY, 2*sizeof(int) + SHM_BASE_PROC_NUMBER*sizeof(process),IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
-    	// if the shm return error and it is not already exist
-        if (errno != EEXIST) {
-            fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno));
-    	    exit(1);
-        }
-
-        // if the shm already exists we get the id only
-        shm_status = 0;
-        if ((idshm = shmget(SHM_KEY, 2*sizeof(int) + SHM_BASE_PROC_NUMBER*sizeof(process),0x1ff)) < 0) { 
-            fprintf(stderr, "Error creating shared mem: \n%s\n", strerror(errno));
-            exit(1);
-        }
-    }
-
-    // attatch the shared mem
-	pshm = (int *) shmat(idshm, (char *)0, 0);
-	if (pshm == (int *)-1) { 
-		fprintf(stderr, "Error attaching shared mem: \n%s\n", strerror(errno));
-	}
-
-    // table all size and used size variables initialized if ti hasn't been already
-    if (shm_status) {
-        *(pshm) = SHM_BASE_PROC_NUMBER;
-        *(pshm+sizeof(int)) = 0;
-    } else {
-        shm_psize = (pshm);
-        shm_pcounter = (pshm+sizeof(int));
-    }
-
-    pp_list = pshm+2*sizeof(int);
-
     // push the processes read into shared memory's process vector
-    for (i=0; i<p_count; i++) {
-        memcpy(pp_list+i*sizeof(process)+(*shm_pcounter), &p_list[i], sizeof(process));
-        (*shm_pcounter)++;
-    }
-
-    memcpy(&p_list[8], &pp_list[0], sizeof(process));
-    proc_pretty_printer(p_list[8]);
+    append_proc_list(p_list);
 
     return 0;
 }
