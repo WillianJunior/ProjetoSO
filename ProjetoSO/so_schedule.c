@@ -2,6 +2,7 @@
 
 int idsem_free_proc;
 int idqueue;
+int least_proc;
 
 int main(int argc, char const *argv[]) {
 	
@@ -24,15 +25,15 @@ int main(int argc, char const *argv[]) {
 
 	strcpy(dummy_proc[1].exec_name, "helloworld");
 	strcpy(dummy_proc[1].exec_path, "helloworld");
-	dummy_proc[1].max_time = 120;
+	dummy_proc[1].max_time = 50;
 	dummy_proc[1].n_proc = 1;
 	strcpy(dummy_proc[1].argv,"");
 	dummy_proc[1].status = PENDING;
 
 	strcpy(dummy_proc[2].exec_name, "helloworld");
 	strcpy(dummy_proc[2].exec_path, "helloworld");
-	dummy_proc[2].max_time = 120;
-	dummy_proc[2].n_proc = 1;
+	dummy_proc[2].max_time = 30;
+	dummy_proc[2].n_proc = 4;
 	strcpy(dummy_proc[2].argv,"");
 	dummy_proc[2].status = PENDING;
 
@@ -46,13 +47,13 @@ int main(int argc, char const *argv[]) {
 
 	// start the semaphore
 	if ((idsem_free_proc = semget(FREE_PROC_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
-		printf("erro na criacao do semaforo\n"); 
+		printf("Error obtaining the semaphore: %s\n", strerror(errno)); 
 		exit(1);
 	}
 
 	// access the msg queue from the spawner
-	if ((idqueue = msgget(SCH_SPW_MSGQ_KEY, 0x1FF)) < 0) {
-		printf( "erro na obtencao da fila\n" );
+	if ((idqueue = msgget(SCH_SPW_MSGQ_KEY, IPC_CREAT|0x1FF)) < 0) {
+		printf( "Error obtaining the msg queue: %s\n", strerror(errno));
 		exit(1);
 	}
 
@@ -61,35 +62,51 @@ int main(int argc, char const *argv[]) {
 	free_proc = atoi(argv[1]);
 	sem_op(idsem_free_proc, free_proc);
 
+	// set the sorting alarm
+	signal(SIGALRM, sorter);
+	alarm(SORTING_TIMEOUT);
+
+	// set the daemons waiters
+	signal(SIGUSR1, freed_proc_daemon);
+	signal(SIGUSR2, new_submit_daemon);
+
 	while (1) {
 		// if there is at least one free process it won't block
+		//getchar();
 		sem_op(idsem_free_proc, -1);
+		//getchar();
+		printf("sem: %d\n", semctl(idsem_free_proc, 0, GETVAL));
 
 		// run through the process list and recover a new process
 		printf("Searching for a process...\n");
+		least_proc = 100000; // large num
 		for (i=0; i<3; i++) {
 			proc = dummy_proc[i];
+			if (proc.n_proc < least_proc && proc.status == PENDING)
+				least_proc = proc.n_proc;
 			// search
-			if (proc.status == PENDING && proc.n_proc <= free_proc) {
+			if (proc.status == PENDING && proc.n_proc <= semctl(idsem_free_proc, 0, GETVAL)-1) {
+				// change the process state
+				dummy_proc[i].status = RUNNING;
+				printf("Found!!!\n");
 				found = 1;
 				break;
 			}
 		}
 
 		if (found) {
-			printf("Found!!!\n");
 			proc_pretty_printer(proc);
 			// alocate the processes
-			free_proc -= proc.n_proc;
-			if (proc.n_proc != 1)
+			printf("sem: %d\n", semctl(idsem_free_proc, 0, GETVAL));
+			printf("n_proc: %d\n", proc.n_proc);
+			if (proc.n_proc != 1) {
+				printf("hehre\n");
 				sem_op(idsem_free_proc, 1 - proc.n_proc);
-
-			// change the process state
-			proc.status = RUNNING;
+			}
 
 			// send it to the spawner to be executed
 			if(msgsnd(idqueue, &proc, sizeof(process), 0) < 0)
-				printf("error: %s\n", strerror(errno));
+				printf("Error sending process to be executed: %s\n", strerror(errno));
 			found = 0;
 			printf("Sent to be executed\n");
 
@@ -104,6 +121,7 @@ int main(int argc, char const *argv[]) {
 				pause();
 
 			// start the daemons
+			printf("Starting proc daemons\n");
 			kill(pid_fp, SIGUSR1);
 			kill(pid_np, SIGUSR2);
 
@@ -111,19 +129,19 @@ int main(int argc, char const *argv[]) {
 			wait(&status);
 
 			// kill and wait the other daemon
-			if (status)
+			if (WEXITSTATUS(status)) {
 				kill(pid_fp, SIGKILL);
-			else
+				printf("New submit\n");
+			} else {
 				kill(pid_np, SIGKILL);
+				printf("Freed process\n");
+			}
 
 			// wait for the killed daemon
 			wait(&status);
 
 			// get the result
-
 		}
-
-
 	}
 
 	return 0;
@@ -131,12 +149,24 @@ int main(int argc, char const *argv[]) {
 
 void freed_proc_daemon () {
 
+	printf("least: %d\n", least_proc);
+	printf("sem: %d\n", semctl(idsem_free_proc, 0, GETVAL));
+	sem_op(idsem_free_proc, 1-least_proc);
+	sem_op(idsem_free_proc, least_proc);
+	printf("procfree\n");
 	exit(0);
 
 }
 
 void new_submit_daemon () {
 
+	pause();
+	sleep(5000);
+	printf("heeey\n");
 	exit(1);
 
+}
+
+void sorter () {
+	alarm(SORTING_TIMEOUT);
 }

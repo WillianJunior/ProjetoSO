@@ -4,10 +4,18 @@ int pid;
 
 int main(int argc, char const *argv[]) {
 	
+	int idsem_free_proc;
 	int idqueue;
 	int state;
 	process proc;
 
+	// start the semaphore
+	if ((idsem_free_proc = semget(FREE_PROC_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
+		printf("Error obtaining the semaphore: %s\n", strerror(errno)); 
+		exit(1);
+	}
+
+	// access the msg queue from the spawner
 	if ((idqueue = msgget(SCH_SPW_MSGQ_KEY, IPC_CREAT|0x1FF)) < 0) {
 		printf( "erro na obtencao da fila\n" );
 		exit(1);
@@ -43,6 +51,8 @@ int main(int argc, char const *argv[]) {
 			alarm(0);
 			printf("[Wrapper] State: %d\n", state);
 			printf("[Wrapper] Program finished\n");
+			sem_op(idsem_free_proc, proc.n_proc);
+			printf("sem: %d\n", semctl(idsem_free_proc, 0, GETVAL));
 			return state;
 		}
 	}

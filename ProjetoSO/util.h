@@ -2,6 +2,7 @@
 #define UTIL_H
 
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
 
 #include "basic_types.h"
