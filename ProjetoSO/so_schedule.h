@@ -18,8 +18,6 @@
 #include "util.h"
 #include "basic_types.h"
 
-#define SORTING_TIMEOUT 60
-
 void freed_proc_daemon ();
 void new_submit_daemon ();
 

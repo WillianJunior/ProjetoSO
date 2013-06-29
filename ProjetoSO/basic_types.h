@@ -12,6 +12,9 @@
 #define FREE_PROC_SEM_KEY 0x1927
 #define SCH_SBMT_SEM_KEY 0x1928
 #define SCH_SPW_MSGQ_KEY 0x1927
+#define PROC_TABLE_SHM_KEY 0x1927
+#define COEF_LIST_1_SHM_KEY 0x1929
+#define COEF_LIST_2_SHM_KEY 0x1931
 
 enum status {
 	RUNNING,
@@ -26,14 +29,26 @@ struct process {
 	unsigned int n_proc;
 	char argv[PROC_ARGV_SIZE];
 	float priority_coef;
-	struct process* prev;
-	struct process* next;
-	int prev_index;
-	int next_index;
 	enum status status;
 };
 
+struct priority_list {
+	int proc_index;
+	int priority_coef;
+};
+
+union all_types {
+	struct process p;
+	struct priority_list pl;
+	int prev_index;
+	int next_index;
+	union all_types* prev;
+	union all_types* next;
+};
+
 typedef struct process process;
+typedef struct priority_list priority_list;
+typedef union all_types all_types;
 
 struct sembuf sem_op_s;
 

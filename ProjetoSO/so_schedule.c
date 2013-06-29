@@ -42,9 +42,6 @@ int main(int argc, char const *argv[]) {
 	// set the number of free processes
 	sem_op(idsem_free_proc, atoi(argv[1]));
 
-	// get the shrm access
-	//proc_shrm = get_proc_shr_mem(); // maybe not needed
-
 	// set the daemons waiters
 	signal(SIGUSR1, freed_proc_daemon);
 	signal(SIGUSR2, new_submit_daemon);
