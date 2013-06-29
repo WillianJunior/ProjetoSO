@@ -9,10 +9,11 @@ void print_process_list() {
     }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+
+	init();
 
 	print_process_list();
 
 	return 0;
 }
-

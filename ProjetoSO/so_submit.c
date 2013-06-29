@@ -164,6 +164,7 @@ int main(int argc, char *argv[]) {
     fclose(fp);
 
     // push the processes read into shared memory's process vector
+    init();
     append_proc_list(p_list);
 
     // send a signal to the scheduler
