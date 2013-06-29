@@ -14,7 +14,7 @@
 #include <sys/sem.h>
 
 #include "spawner.h"
-#include "shrmem.h"
+#include "flex_shrmem.h"
 #include "util.h"
 #include "basic_types.h"
 
