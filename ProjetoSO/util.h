@@ -7,7 +7,8 @@
 
 #include "basic_types.h"
 
-void proc_pretty_printer(union all_types proc);
+//void proc_pretty_printer(union all_types proc);
+void proc_pretty_printer(struct process proc);
 
 // blocking semop
 void sem_op (int idsem_free_proc, int n);

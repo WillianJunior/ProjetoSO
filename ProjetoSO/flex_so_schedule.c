@@ -12,7 +12,7 @@ int main(int argc, char const *argv[]) {
 	int pid_fp;
 	int pid_np;
 	int found = 0;
-	process *proc;
+	all_types *proc;
 
 	// check the input parameters
 	if (argc != 2) {
@@ -54,16 +54,16 @@ int main(int argc, char const *argv[]) {
 		printf("Searching for a process...\n");
 		least_proc = 100000; // large num
 		pending = 0;
-		if ((proc = get_first_proc()) != 0) {
+		if ((proc = get_first_proc(PROC_TABLE_SHM_KEY)) != 0) {
 			do {
-				if (proc->n_proc < least_proc && proc->status == PENDING)
-					least_proc = proc->n_proc;
+				if (proc->p.n_proc < least_proc && proc->p.status == PENDING)
+					least_proc = proc->p.n_proc;
 				// search
-				if (proc->status == PENDING) {
+				if (proc->p.status == PENDING) {
 					pending = 1;
-					if (proc->n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
+					if (proc->p.n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
 						// change the process state
-						proc->status = RUNNING;
+						proc->p.status = RUNNING;
 						printf("Found!!!\n");
 						proc_pretty_printer(*proc);
 						found = 1;
@@ -76,8 +76,8 @@ int main(int argc, char const *argv[]) {
 
 		if (found) {
 			// alocate the processes
-			if (proc->n_proc != 1)
-				sem_op(idsem_free_proc, 1 - proc->n_proc);
+			if (proc->p.n_proc != 1)
+				sem_op(idsem_free_proc, 1 - proc->p.n_proc);
 
 			// send it to the spawner to be executed
 			if(msgsnd(idqueue, proc, sizeof(process), 0) < 0)
