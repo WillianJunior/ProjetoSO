@@ -32,6 +32,7 @@ struct process {
 	enum status status;
 	int prev_index;
 	int next_index;
+	int n_req;
 	struct process* prev;
 	struct process* next;
 };

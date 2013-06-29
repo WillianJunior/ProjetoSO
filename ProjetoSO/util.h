@@ -2,10 +2,13 @@
 #define UTIL_H
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
 #include "basic_types.h"
+
+char* sec2str(unsigned long seconds);
 
 //void proc_pretty_printer(union all_types proc);
 void proc_pretty_printer(struct process proc);

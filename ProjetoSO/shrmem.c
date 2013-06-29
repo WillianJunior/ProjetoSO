@@ -58,14 +58,14 @@ int get_proc_shr_mem() {
     int idshm, shm_status = 1;
 
     // Instantiates a new shared memory segment or gets the id of the segment already instanciated
-    if ((idshm = shmget(SHM_KEY, 2 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(process), IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
+    if ((idshm = shmget(SHM_KEY, 3 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(process), IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
         // if the shm return error and it is not already exist
         if (errno != EEXIST)
             return -1;
 
         // If the shm already exists we get the id only
         shm_status = 0;
-        if ((idshm = shmget(SHM_KEY, 2 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(process), 0x1ff)) < 0)
+        if ((idshm = shmget(SHM_KEY, 3 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(process), 0x1ff)) < 0)
             return -1;
     }
 
@@ -78,10 +78,11 @@ int get_proc_shr_mem() {
     if (shm_status) {
         (*shm)       = -1; // Pointer to the beginning of the list.
         (*(shm+1))   = -1; // Pointer to the end of the list.
+        (*(shm+2))   = 0;  // N_Req (auto-increment)
     }
 
     // Sets another "friendly" (helper) global variable.
-    base_proc = (process *) (shm + 2);
+    base_proc = (process *) (shm + 3);
 
     return 0;
 }
@@ -110,8 +111,8 @@ process* malloc_proc_shr_mem() {
 
     if(!found) return (struct process*) 0; // Return NULL
     //DEBUG
-    printf("index = %d\n", i);
-    printf("position = %d\n\n", j);
+    // printf("index = %d\n", i);
+    // printf("position = %d\n\n", j);
     shm_map_set(i, j);
     return map2proc(i, j);
 }
@@ -269,6 +270,13 @@ process* next_proc(process* proc) {
         return base_proc + proc->next_index;
     else
         return (process *) 0;
+}
+
+/**
+ * It returns the next id available following an auto-increment strategy.
+ */
+int get_unique_id_proc() {
+    return ++(*(shm+2));
 }
 
 /**

@@ -13,6 +13,8 @@
 #include "util.h"
 #include "shrmem.h"
 
+void print_table_header();
+
 void print_process_list();
 
 #endif

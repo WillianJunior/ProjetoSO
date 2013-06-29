@@ -83,6 +83,7 @@ int parse_process_list(struct process **p_list, const size_t size, FILE* fp) {
                 p_aux->max_time = atoi(hours) * 3600 + atoi(minutes) * 60 + atoi(seconds);
                 p_aux->n_proc = (n_proc = atoi(num_proc)) < 0 ? 0 : n_proc; 
                 strcpy(p_aux->argv, params);
+                p_aux->n_req = get_unique_id_proc();
 
                 p_aux->next = (process *) 0;
                 j++;
@@ -124,7 +125,6 @@ int append_proc_list(process *proc_list) {
             aux->next->prev_index = index_proc(aux);
             aux = aux->next;
         }
-
         set_last_proc(aux);
         proc_list = proc_list->next;
     }
@@ -160,11 +160,13 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    // initialize memory manager
+    init();
+
     p_count = parse_process_list(&p_list, SHM_BASE_PROC_NUMBER, fp);
     fclose(fp);
 
     // push the processes read into shared memory's process vector
-    init();
     append_proc_list(p_list);
 
     // send a signal to the scheduler

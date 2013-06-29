@@ -42,4 +42,6 @@ process* next_proc(process* proc);
 
 process* last_proc(process* proc);
 
+int get_unique_id_proc();
+
 #endif

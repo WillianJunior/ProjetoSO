@@ -1,12 +1,12 @@
 % Comentário 1
 filename=helloworld
-params=
+params=  abc 19 23
 max_time=00:05:00
 n_proc=1
 
 % Comentário 2
 filename=fibonacci
-params=
+params=10
 max_time=01:01:01
 n_proc=2
 
