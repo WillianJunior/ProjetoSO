@@ -14,12 +14,11 @@
 #include <sys/sem.h>
 
 #include "spawner.h"
+#include "shrmem.h"
 #include "util.h"
 #include "basic_types.h"
 
 #define SORTING_TIMEOUT 60
-
-void sorter();
 
 void freed_proc_daemon ();
 void new_submit_daemon ();

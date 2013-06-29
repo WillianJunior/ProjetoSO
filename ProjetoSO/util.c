@@ -20,3 +20,9 @@ void sem_op (int idsem_free_proc, int n) {
 		printf("error: %s\n", strerror(errno));
 }
 
+int sem_op_nblock (int idsem_free_proc, int n) {
+	sem_op_s.sem_num = 0;
+	sem_op_s.sem_op = n;
+	sem_op_s.sem_flg = IPC_NOWAIT;
+	return semop(idsem_free_proc, &sem_op_s, 1);
+}

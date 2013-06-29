@@ -1,10 +1,10 @@
 #include "so_schedule.h"
 
 int idsem_free_proc;
+int idsem_sch_submit;
 int idqueue;
 int least_proc;
 int pending;
-int i;
 
 int main(int argc, char const *argv[]) {
 	
@@ -12,30 +12,8 @@ int main(int argc, char const *argv[]) {
 	int pid_fp;
 	int pid_np;
 	int found = 0;
-
-	// dummy for testing
-	process dummy_proc[3];
-
-	strcpy(dummy_proc[0].exec_name, "helloworld");
-	strcpy(dummy_proc[0].exec_path, "helloworld");
-	dummy_proc[0].max_time = 120;
-	dummy_proc[0].n_proc = 1;
-	strcpy(dummy_proc[0].argv,"");
-	dummy_proc[0].status = PENDING;
-
-	strcpy(dummy_proc[1].exec_name, "helloworld");
-	strcpy(dummy_proc[1].exec_path, "helloworld");
-	dummy_proc[1].max_time = 50;
-	dummy_proc[1].n_proc = 1;
-	strcpy(dummy_proc[1].argv,"");
-	dummy_proc[1].status = PENDING;
-
-	strcpy(dummy_proc[2].exec_name, "helloworld");
-	strcpy(dummy_proc[2].exec_path, "helloworld");
-	dummy_proc[2].max_time = 30;
-	dummy_proc[2].n_proc = 4;
-	strcpy(dummy_proc[2].argv,"");
-	dummy_proc[2].status = PENDING;
+	//process *proc_shrm;
+	process *proc;
 
 	// check the input parameters
 	if (argc != 2) {
@@ -49,19 +27,23 @@ int main(int argc, char const *argv[]) {
 		exit(1);
 	}
 
+	// get a communication channel between the scheduler and so_submit using a semaphore
+	if ((idsem_sch_submit = semget(SCH_SBMT_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
+		printf("Error obtaining the semaphore: %s\n", strerror(errno)); 
+		exit(1);
+	}
+
 	// access the msg queue from the spawner
 	if ((idqueue = msgget(SCH_SPW_MSGQ_KEY, IPC_CREAT|0x1FF)) < 0) {
 		printf( "Error obtaining the msg queue: %s\n", strerror(errno));
 		exit(1);
 	}
 
-
 	// set the number of free processes
 	sem_op(idsem_free_proc, atoi(argv[1]));
 
-	// set the sorting alarm
-	signal(SIGALRM, sorter);
-	alarm(SORTING_TIMEOUT);
+	// get the shrm access
+	//proc_shrm = get_proc_shr_mem(); // maybe not needed
 
 	// set the daemons waiters
 	signal(SIGUSR1, freed_proc_daemon);
@@ -76,30 +58,33 @@ int main(int argc, char const *argv[]) {
 		printf("Searching for a process...\n");
 		least_proc = 100000; // large num
 		pending = 0;
-		for (i=0; i<3; i++) {
-			if (dummy_proc[i].n_proc < least_proc && dummy_proc[i].status == PENDING)
-				least_proc = dummy_proc[i].n_proc;
-			// search
-			if (dummy_proc[i].status == PENDING) {
-				pending = 1;
-				if (dummy_proc[i].n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
-					// change the process state
-					dummy_proc[i].status = RUNNING;
-					printf("Found!!!\n");
-					proc_pretty_printer(dummy_proc[i]);
-					found = 1;
-					break;
+		if ((proc = get_first_proc()) != 0) {
+			do {
+				if (proc->n_proc < least_proc && proc->status == PENDING)
+					least_proc = proc->n_proc;
+				// search
+				if (proc->status == PENDING) {
+					pending = 1;
+					if (proc->n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
+						// change the process state
+						proc->status = RUNNING;
+						printf("Found!!!\n");
+						proc_pretty_printer(*proc);
+						found = 1;
+						break;
+					}
 				}
-			}
-		}
+			} while((proc = next_proc(proc)) != 0);
+		} else
+			printf("There isn't any process\n");
 
 		if (found) {
 			// alocate the processes
-			if (dummy_proc[i].n_proc != 1)
-				sem_op(idsem_free_proc, 1 - dummy_proc[i].n_proc);
+			if (proc->n_proc != 1)
+				sem_op(idsem_free_proc, 1 - proc->n_proc);
 
 			// send it to the spawner to be executed
-			if(msgsnd(idqueue, &dummy_proc[i], sizeof(process), 0) < 0)
+			if(msgsnd(idqueue, proc, sizeof(process), 0) < 0)
 				printf("Error sending process to be executed: %s\n", strerror(errno));
 			found = 0;
 			printf("Sent to be executed\n");
@@ -151,13 +136,8 @@ void freed_proc_daemon () {
 
 void new_submit_daemon () {
 
-	// todo
-	pause();
+	sem_op(idsem_sch_submit, 1);
+	sem_op(idsem_sch_submit, 0);
 	printf("New submit\n");
 	exit(1);
-}
-
-void sorter () {
-	// todo
-	alarm(SORTING_TIMEOUT);
 }

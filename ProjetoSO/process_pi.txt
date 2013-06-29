@@ -1,26 +1,26 @@
 % Comentário 1
-filename=./helloworld
+filename=helloworld
 params=
 max_time=00:05:00
-n_proc=4
+n_proc=1
 
 % Comentário 2
-filename=./fibonacci
-params=10
-max_time=01:01:01
-n_proc=2
+%filename=./fibonacci
+%params=10
+%max_time=01:01:01
+%n_proc=2
 
 % Comentário 14
-filename=./helloworld-not
+%filename=./helloworld-not
 %comentario pra fuder td
-params=
-max_time=00:05:00
-n_proc=4
+%params=
+%max_time=00:05:00
+%n_proc=4
 
 % Comentário 25
-filename=./fibonacci⁻¹
-params=100 ad
-max_time=01:01:01
-n_proc=2
+%filename=./fibonacci⁻¹
+%params=100 ad
+%max_time=01:01:01
+%n_proc=2
 
 

@@ -10,11 +10,13 @@
 #define PROC_ARGV_SIZE 100
 
 #define FREE_PROC_SEM_KEY 0x1927
+#define SCH_SBMT_SEM_KEY 0x1928
 #define SCH_SPW_MSGQ_KEY 0x1927
 
 enum status {
 	RUNNING,
-	PENDING
+	PENDING,
+	FINISHED
 };
 
 struct process {

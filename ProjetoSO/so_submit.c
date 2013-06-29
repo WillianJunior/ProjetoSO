@@ -68,7 +68,9 @@ int parse_process_list(struct process **p_list, const size_t size, FILE* fp) {
                     p_aux = p_aux->next;
                 }
 
+                strcpy(p_aux->exec_name, filename); // only works for the actual path NEED TO BE CORRECTED
                 strcpy(p_aux->exec_path, filename);
+                p_aux->status = PENDING;
                 hours[0] = max_time[0]; 
                 hours[1] = max_time[1]; 
                 hours[2] = '\0';
@@ -137,8 +139,16 @@ int main(int argc, char *argv[]) {
     int p_count;
     const char* filename;
 
+    int idsem_sch_submit;
+
     if(argc < 2) {
         fprintf(stderr, "Usage: so_submit <process file>.\n");
+        exit(1);
+    }
+
+    // get a communication channel between the scheduler and so_submit using a semaphore
+    if ((idsem_sch_submit = semget(SCH_SBMT_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
+        printf("Error obtaining the semaphore: %s\n", strerror(errno)); 
         exit(1);
     }
 
@@ -155,6 +165,9 @@ int main(int argc, char *argv[]) {
 
     // push the processes read into shared memory's process vector
     append_proc_list(p_list);
+
+    // send a signal to the scheduler
+    sem_op_nblock(idsem_sch_submit, -1);
 
     return 0;
 }
