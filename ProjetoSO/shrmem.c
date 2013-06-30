@@ -5,7 +5,7 @@
  *
  * Sistemas Operacionais - Profa. Alba Melo
  *
- * Trabalho 1 - Escalonador de Processos
+ * Trabalho 1 - Escalonador de all_typesos
  *
  */
 
@@ -23,7 +23,7 @@
  */
 int get_proc_shr_mem();
 int get_bitmap_shr_mem();
-process* map2proc(int index, int position);
+all_types* map2proc(int index, int position);
 void shm_map_set(int index, int position);
 void shm_map_reset(int index, int position);
 
@@ -35,7 +35,7 @@ void shm_map_reset(int index, int position);
  */
 static unsigned char *bitmap = (unsigned char*) 0;
 static int *shm = (int *) 0;
-static process *base_proc = (process *) 0;
+static all_types *base_proc = (all_types *) 0;
 
 /**
  * Initializes memory manager.
@@ -52,20 +52,20 @@ int init() {
 }
 
 /**
- * Returns pointer to the beginning of the process' segment.
+ * Returns pointer to the beginning of the all_types' segment.
  */
 int get_proc_shr_mem() {
     int idshm, shm_status = 1;
 
     // Instantiates a new shared memory segment or gets the id of the segment already instanciated
-    if ((idshm = shmget(SHM_KEY, 3 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(process), IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
+    if ((idshm = shmget(SHM_KEY, 3 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(all_types), IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
         // if the shm return error and it is not already exist
         if (errno != EEXIST)
             return -1;
 
         // If the shm already exists we get the id only
         shm_status = 0;
-        if ((idshm = shmget(SHM_KEY, 3 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(process), 0x1ff)) < 0)
+        if ((idshm = shmget(SHM_KEY, 3 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(all_types), 0x1ff)) < 0)
             return -1;
     }
 
@@ -82,15 +82,15 @@ int get_proc_shr_mem() {
     }
 
     // Sets another "friendly" (helper) global variable.
-    base_proc = (process *) (shm + 3);
+    base_proc = (all_types *) (shm + 3);
 
     return 0;
 }
 
 /**
- * Allocates space for a process in the table.
+ * Allocates space for a all_types in the table.
  */
-process* malloc_proc_shr_mem() {
+all_types* malloc_proc_shr_mem() {
     int i, j, found;
     unsigned char block;
     unsigned char mask = 1;
@@ -109,8 +109,11 @@ process* malloc_proc_shr_mem() {
         if(found) break;
     }
 
-    if(!found) return (struct process*) 0; // Return NULL
+    if(!found) return (struct all_types*) 0; // Return NULL
     //DEBUG
+    // printf("(*shm) = %d\n", *shm);
+    // printf("*(shm+1) = %d\n", *(shm+1));
+    // printf("*(shm+2) = %d\n", *(shm+2));
     // printf("index = %d\n", i);
     // printf("position = %d\n\n", j);
     shm_map_set(i, j);
@@ -118,12 +121,12 @@ process* malloc_proc_shr_mem() {
 }
 
 /**
- * Removes the given process from table, updates pointers and frees the space in the bitmap.
+ * Removes the given all_types from table, updates pointers and frees the space in the bitmap.
  */
-int free_proc_shr_mem(process* proc) {
+int free_proc_shr_mem(all_types* proc) {
     int index;
     div_t res;
-    process *prev, *next;
+    all_types *prev, *next;
 
     if(!proc)
         return -1;
@@ -138,16 +141,16 @@ int free_proc_shr_mem(process* proc) {
         next->prev = prev;
         next->prev_index = proc->prev_index;
     } else if(prev) { // proc is the last element.
-        prev->next = (process *) 0;
+        prev->next = (all_types *) 0;
         prev->next_index = -1;
         set_last_proc(prev);
     } else if(next) { // proc is the first element.
-        next->prev = (process *) 0;
+        next->prev = (all_types *) 0;
         next->prev_index = -1;
         set_first_proc(next);
     } else {         // proc is a singleton element. 
-        set_first_proc((process *) 0);
-        set_last_proc((process *) 0);
+        set_first_proc((all_types *) 0);
+        set_last_proc((all_types *) 0);
     }
 
     index = index_proc(proc);
@@ -159,13 +162,13 @@ int free_proc_shr_mem(process* proc) {
 }
 
 /**
- * Clean the process' table completely.
+ * Clean the all_types' table completely.
  *
  * TODO: Optimize this function just setting -1 in the header and "0ing" the bitmap.
  *       It just traverses the list freeing one by one
  */
 int free_all_proc_shr_mem() {
-    process *p, *aux;
+    all_types *p, *aux;
 
     p = get_first_proc();
     while(p) {
@@ -177,18 +180,18 @@ int free_all_proc_shr_mem() {
 }
 
 /**
- * Returns the index of a given process.
+ * Returns the index of a given all_types.
  */
-int index_proc(process* proc) {
+int index_proc(all_types* proc) {
     if(!proc)
         return -1;
     return abs(proc - base_proc);
 }
 
 /**
- * Maps a bit index and position to a process.
+ * Maps a bit index and position to a all_types.
  */
-process* map2proc(int index, int position) { // TODO: Convert to macro.
+all_types* map2proc(int index, int position) { // TODO: Convert to macro.
    int offset;
    offset = index * BITMAP_BLOCK_SIZE + position;
    return base_proc + offset;
@@ -197,23 +200,23 @@ process* map2proc(int index, int position) { // TODO: Convert to macro.
 /**
  * Returns pointer to the last element of the list.
  */
-process* get_first_proc() {
+all_types* get_first_proc() {
     if((*shm) >= 0)
         return base_proc + (*shm);
     else
-        return (process *) 0;
+        return (all_types *) 0;
 }
 
 /**
- * Sets the given process as the first one.
+ * Sets the given all_types as the first one.
  * 
  * If NULL is passed, it removes the reference for the first element of the list.
  */
-int set_first_proc(process* proc) {
+int set_first_proc(all_types* proc) {
     if(!proc) {
         (*shm) = -1;
     } else {
-        proc->prev = (process *) 0;
+        proc->prev = (all_types *) 0;
         proc->prev_index = -1;
         (*shm) = index_proc(proc);
     }
@@ -223,23 +226,23 @@ int set_first_proc(process* proc) {
 /**
  * Returns pointer to the first element of the list. Useful when pushing new records.
  */
-process* get_last_proc() {
+all_types* get_last_proc() {
     if((*(shm+1)) >= 0)
         return base_proc + (*(shm+1));
     else
-        return (process *) 0;
+        return (all_types *) 0;
 }
 
 /**
- * Sets the given process as the first one.
+ * Sets the given all_types as the first one.
  *
  * If NULL is passed, it removes the reference for the first element of the list.
  */
-int set_last_proc(process* proc) {
+int set_last_proc(all_types* proc) {
     if(!proc) {
         (*(shm+1)) = -1;
     } else {
-        proc->next = (process *) 0;
+        proc->next = (all_types *) 0;
         proc->next_index = -1;
         (*(shm+1)) = index_proc(proc);
     }
@@ -247,29 +250,29 @@ int set_last_proc(process* proc) {
 }
 
 /**
- * Returns the previous process in the list.
+ * Returns the previous all_types in the list.
  */
-process* prev_proc(process* proc) {
+all_types* prev_proc(all_types* proc) {
     if(!proc)
-        return (process *) 0;
+        return (all_types *) 0;
 
     if(proc->prev_index >= 0)
         return base_proc + proc->prev_index;
     else
-        return (process *) 0;
+        return (all_types *) 0;
 }
 
 /**
- * Returns the next process in the list.
+ * Returns the next all_types in the list.
  */
-process* next_proc(process* proc) {
+all_types* next_proc(all_types* proc) {
     if(!proc)
-        return (process *) 0;
+        return (all_types *) 0;
     
     if(proc->next_index >= 0)
         return base_proc + proc->next_index;
     else
-        return (process *) 0;
+        return (all_types *) 0;
 }
 
 /**
@@ -283,7 +286,7 @@ int get_unique_id_proc() {
  * Returns pointer to the beginning of the bitmap segment.
  */
 int get_bitmap_shr_mem() {
-    int idshm, shm_status = 1;
+    int idshm;
 
     // Instantiate a new shared mem segment or get the id of the segment already instantiated.
     if ((idshm = shmget(BITMAP_KEY, BITMAP_SIZE, IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
@@ -291,7 +294,6 @@ int get_bitmap_shr_mem() {
         if (errno != EEXIST)
             return -1;
         // if the shm already exists we get the id only
-        shm_status = 0;
         if ((idshm = shmget(BITMAP_KEY, BITMAP_SIZE, 0x1ff)) < 0)
             return -1;
     }

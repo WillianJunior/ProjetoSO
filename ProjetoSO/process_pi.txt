@@ -1,14 +1,14 @@
 % Comentário 1
 filename=helloworld
-params=abc 23 19
+params=
 max_time=00:05:00
 n_proc=1
 
 % Comentário 2
-filename=fibonacci
-params=10
-max_time=01:01:01
-n_proc=2
+%filename=fibonacci
+%params=10
+%max_time=01:01:01
+%n_proc=2
 
 % Comentário 14
 %filename=./helloworld-not

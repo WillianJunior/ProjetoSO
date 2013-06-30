@@ -15,7 +15,7 @@ int main(int argc, char const *argv[]) {
 	int pid_fp;
 	int pid_np;
 	int found = 0;
-	process *proc;
+	all_types *proc;
 
 	// check the input parameters
 	if (argc != 2) {
@@ -83,14 +83,14 @@ int main(int argc, char const *argv[]) {
 		// try to find out a executable process
 		if ((proc = get_first_proc()) != 0) {
 			do {
-				if (proc->n_proc < least_proc && proc->status == PENDING)
-					least_proc = proc->n_proc;
+				if (proc->flex_proc.p.n_proc < least_proc && proc->flex_proc.p.status == PENDING)
+					least_proc = proc->flex_proc.p.n_proc;
 				// search
-				if (proc->status == PENDING) {
+				if (proc->flex_proc.p.status == PENDING) {
 					pending = 1;
-					if (proc->n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
+					if (proc->flex_proc.p.n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
 						// change the process state
-						proc->status = RUNNING;
+						proc->flex_proc.p.status = RUNNING;
 						printf("Found!!!\n");
 						proc_pretty_printer(*proc);
 						found = 1;
@@ -109,11 +109,11 @@ int main(int argc, char const *argv[]) {
 			sem_op(idsem_esc_count, 1);			
 
 			// alocate the processes
-			if (proc->n_proc != 1)
-				sem_op(idsem_free_proc, 1 - proc->n_proc);
+			if (proc->flex_proc.p.n_proc != 1)
+				sem_op(idsem_free_proc, 1 - proc->flex_proc.p.n_proc);
 
 			// send it to the spawner to be executed
-			if(msgsnd(idqueue, proc, sizeof(process), 0) < 0)
+			if(msgsnd(idqueue, proc, sizeof(all_types), 0) < 0)
 				printf("Error sending process to be executed: %s\n", strerror(errno));
 			found = 0;
 			printf("Sent to be executed\n");
