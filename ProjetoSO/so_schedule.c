@@ -59,7 +59,7 @@ int main(int argc, char const *argv[]) {
 	sem_op(idsem_esc_crit, 1);
 
 	// attach the shared mem for all proc_shr functions
-	init();
+	init(PROC_TABLE_SHM_KEY);
 
 	// set the number of free processes
 	sem_op(idsem_free_proc, atoi(argv[1]));

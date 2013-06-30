@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
     }
 
     // initialize memory manager
-    init();
+    init(PROC_TABLE_SHM_KEY);
 
     parse_process_list(&p_list, SHM_BASE_PROC_NUMBER, fp);
     fclose(fp);

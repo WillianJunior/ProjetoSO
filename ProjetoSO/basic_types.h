@@ -16,7 +16,9 @@
 #define SCH_SBMT_SEM_KEY 0x1928
 #define ADPT_ESC_COUNT_SEM_KEY 0x1929
 #define ADPT_ESC_CRIT_SEM_KEY 0x1930
+
 #define SCH_SPW_MSGQ_KEY 0x1927
+
 #define PROC_TABLE_SHM_KEY 0x1927
 #define COEF_LIST_1_SHM_KEY 0x1929
 #define COEF_LIST_2_SHM_KEY 0x1931
@@ -61,12 +63,12 @@ struct priority_list {
 struct all_types {
 	union flex_proc {
 		struct flex_process p;
+		struct priority_list pl;
 	} flex_proc;
 	int prev_index;
 	int next_index;
 	struct all_types* prev;
 	struct all_types* next;
-	struct priority_list pl;
 };
 
 typedef struct process process;

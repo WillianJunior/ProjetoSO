@@ -16,7 +16,6 @@
  */
 #define BITMAP_BLOCK_SIZE    sizeof(unsigned char) * 8
 #define BITMAP_SIZE          SHM_BASE_PROC_NUMBER / BITMAP_BLOCK_SIZE
-#define BITMAP_KEY 0x1928
 
 /**
  * Not exported functions.
@@ -36,6 +35,8 @@ void shm_map_reset(int index, int position);
 static unsigned char *bitmap = (unsigned char*) 0;
 static int *shm = (int *) 0;
 static all_types *base_proc = (all_types *) 0;
+static int proc_key;
+static int bitmap_key;
 
 /**
  * Initializes memory manager.
@@ -43,7 +44,9 @@ static all_types *base_proc = (all_types *) 0;
  * IMPORTANT: Modules linking to this module must call this function once, before calling any other function. 
  *            Otherwise, it's not going to work properly.
  */
-int init() {
+int init(int key) {
+    proc_key = key;
+    bitmap_key = key + 1;
     if(get_bitmap_shr_mem() < 0 || get_proc_shr_mem() < 0) {
         fprintf(stderr, "An error occured while initializing memory manager: \n%s\n", strerror(errno));
         exit(1);
@@ -58,14 +61,14 @@ int get_proc_shr_mem() {
     int idshm, shm_status = 1;
 
     // Instantiates a new shared memory segment or gets the id of the segment already instanciated
-    if ((idshm = shmget(SHM_KEY, 3 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(all_types), IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
+    if ((idshm = shmget(proc_key, 3 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(all_types), IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
         // if the shm return error and it is not already exist
         if (errno != EEXIST)
             return -1;
 
         // If the shm already exists we get the id only
         shm_status = 0;
-        if ((idshm = shmget(SHM_KEY, 3 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(all_types), 0x1ff)) < 0)
+        if ((idshm = shmget(proc_key, 3 * sizeof(int) + SHM_BASE_PROC_NUMBER * sizeof(all_types), 0x1ff)) < 0)
             return -1;
     }
 
@@ -289,12 +292,12 @@ int get_bitmap_shr_mem() {
     int idshm;
 
     // Instantiate a new shared mem segment or get the id of the segment already instantiated.
-    if ((idshm = shmget(BITMAP_KEY, BITMAP_SIZE, IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
+    if ((idshm = shmget(bitmap_key, BITMAP_SIZE, IPC_CREAT|IPC_EXCL|0x1ff)) < 0) { 
         // if the shm return error and it is not already exist
         if (errno != EEXIST)
             return -1;
         // if the shm already exists we get the id only
-        if ((idshm = shmget(BITMAP_KEY, BITMAP_SIZE, 0x1ff)) < 0)
+        if ((idshm = shmget(bitmap_key, BITMAP_SIZE, 0x1ff)) < 0)
             return -1;
     }
 

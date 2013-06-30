@@ -1,8 +1,6 @@
 #ifndef SHR_MEM_H
 #define SHR_MEM_H
 
-#define SHM_KEY 0x1927
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +14,7 @@
 #include "basic_types.h"
 
 // COMMENTS ABOUT THE FUNCTIONS ARE TEMPORARILY IN 'shrmem.c'.
-int init();
+int init(int key);
 
 all_types* malloc_proc_shr_mem();
 

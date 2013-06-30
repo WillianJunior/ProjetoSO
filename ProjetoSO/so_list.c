@@ -27,7 +27,7 @@ void print_process_list() {
 
 int main(int argc, char *argv[]) {
 
-	init();
+	init(PROC_TABLE_SHM_KEY);
 
 	print_process_list();
 
