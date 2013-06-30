@@ -26,7 +26,7 @@ char* sec2str(unsigned long seconds) {
 	return str;
 }
 
-/*void proc_pretty_printer (struct process proc) {
+void proc_pretty_printer (struct process proc) {
 
 	printf("%-8d", proc.n_req);
 	printf("%-12s", sec2str(proc.max_time));
@@ -48,8 +48,8 @@ char* sec2str(unsigned long seconds) {
 	// printf("next_index: %d\n", proc.next_index);
 	// printf("status: %s\n", proc.status? "PENDING" : "RUNNING");
 	// printf("\n");
-}*/
-void proc_pretty_printer (union all_types proc) {
+}
+/*void proc_pretty_printer (union all_types proc) {
 	printf("Process: \n");
 	printf("exec_path: %s\n", proc.p.exec_path);
 	printf("max_time: %lu\n", proc.p.max_time);
@@ -59,19 +59,23 @@ void proc_pretty_printer (union all_types proc) {
 	printf("next_index: %d\n", proc.next_index);
 	printf("status: %s\n", proc.p.status?"pending":"running");
 	printf("\n");
-}
+}*/
 
-void sem_op (int idsem_free_proc, int n) {
+void sem_op (int idsem, int n) {
 	sem_op_s.sem_num = 0;
 	sem_op_s.sem_op = n;
 	sem_op_s.sem_flg = 0;
-	if ( semop(idsem_free_proc, &sem_op_s, 1) < 0)
+	if ( semop(idsem, &sem_op_s, 1) < 0)
 		printf("error: %s\n", strerror(errno));
 }
 
-int sem_op_nblock (int idsem_free_proc, int n) {
+int sem_op_nblock (int idsem, int n) {
 	sem_op_s.sem_num = 0;
 	sem_op_s.sem_op = n;
 	sem_op_s.sem_flg = IPC_NOWAIT;
-	return semop(idsem_free_proc, &sem_op_s, 1);
+	return semop(idsem, &sem_op_s, 1);
+}
+
+void sem_reset (int idsem) {
+	while (sem_op_nblock(idsem, -1) >= 0);
 }

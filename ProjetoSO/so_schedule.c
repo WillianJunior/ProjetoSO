@@ -2,9 +2,12 @@
 
 int idsem_free_proc;
 int idsem_sch_submit;
+int idsem_esc_count;
+int idsem_esc_crit;
 int idqueue;
 int least_proc;
 int pending;
+int scheduler = 0;
 
 int main(int argc, char const *argv[]) {
 	
@@ -32,11 +35,28 @@ int main(int argc, char const *argv[]) {
 		exit(1);
 	}
 
+	// start the adaptative scheduler counter
+	if ((idsem_esc_count = semget(ADPT_ESC_COUNT_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
+		printf("Error obtaining the semaphore: %s\n", strerror(errno)); 
+		exit(1);
+	}
+
+	// start the adaptative scheduler critic session semaphore
+	if ((idsem_esc_crit = semget(ADPT_ESC_CRIT_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
+		printf("Error obtaining the semaphore: %s\n", strerror(errno)); 
+		exit(1);
+	}
+
 	// access the msg queue from the spawner
 	if ((idqueue = msgget(SCH_SPW_MSGQ_KEY, IPC_CREAT|0x1FF)) < 0) {
 		printf( "Error obtaining the msg queue: %s\n", strerror(errno));
 		exit(1);
 	}
+
+	// start the scheduler changer
+	signal(SIGALRM, round_table);
+	alarm(ROUND_TABLE_TIMEOUT);
+	sem_op(idsem_esc_crit, 1);
 
 	// attach the shared mem for all proc_shr functions
 	init();
@@ -57,6 +77,10 @@ int main(int argc, char const *argv[]) {
 		printf("Searching for a process...\n");
 		least_proc = 100000; // large num
 		pending = 0;
+		// semaphore to make sure that when the scheduler start to seek a proc it doesn't change to other scheduler list
+		sem_op(idsem_esc_crit, -1);
+
+		// try to find out a executable process
 		if ((proc = get_first_proc()) != 0) {
 			do {
 				if (proc->n_proc < least_proc && proc->status == PENDING)
@@ -77,7 +101,13 @@ int main(int argc, char const *argv[]) {
 		} else
 			printf("There isn't any process\n");
 
+		// unlock the round_table to change the scheduler in use
+		sem_op(idsem_esc_crit, 1);
+
 		if (found) {
+			// increment the scheduler runned process counter
+			sem_op(idsem_esc_count, 1);			
+
 			// alocate the processes
 			if (proc->n_proc != 1)
 				sem_op(idsem_free_proc, 1 - proc->n_proc);
@@ -118,6 +148,23 @@ int main(int argc, char const *argv[]) {
 	}
 
 	return 0;
+}
+
+void round_table () {
+	
+	printf("[Round Table] Let's change?\n");
+	// check if it have already runned the minimum amount of processes
+	if(sem_op_nblock(idsem_esc_count, -ROUND_TABLE_MIN_COUNT) < 0) {
+		printf("[Round Table] Noooot...\n");
+		alarm(ROUND_TABLE_TIMEOUT);
+		return;
+	}
+	
+	printf("[Round Table] Ok, time to change\n");
+	// change the actual scheduler, only works for 2 scheduleres, for now
+	scheduler = scheduler?0:1;
+	sem_reset (idsem_esc_count);
+	alarm(ROUND_TABLE_TIMEOUT);
 }
 
 void freed_proc_daemon () {
