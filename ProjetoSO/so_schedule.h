@@ -18,6 +18,7 @@
 #include "util.h"
 #include "basic_types.h"
 
+void round_table ();
 void freed_proc_daemon ();
 void new_submit_daemon ();
 

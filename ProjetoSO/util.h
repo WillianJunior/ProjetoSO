@@ -10,13 +10,16 @@
 
 char* sec2str(unsigned long seconds);
 
-void proc_pretty_printer(struct all_types proc);
 //void proc_pretty_printer(struct process proc);
+void proc_pretty_printer(struct all_types proc);
 
 // blocking semop
-void sem_op (int idsem_free_proc, int n);
+void sem_op (int idsem, int n);
 
 // non-blocking semop
-int sem_op_nblock (int idsem_free_proc, int n);
+int sem_op_nblock (int idsem, int n);
+
+// reset the semaphore to zero
+void sem_reset (int idsem);
 
 #endif
