@@ -1,5 +1,7 @@
-#ifndef FLEX_SHR_MEM_H
-#define FLEX_SHR_MEM_H
+#ifndef SHR_MEM_H
+#define SHR_MEM_H
+
+#define SHM_KEY 0x1927
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,22 +16,32 @@
 #include "basic_types.h"
 
 // COMMENTS ABOUT THE FUNCTIONS ARE TEMPORARILY IN 'shrmem.c'.
-all_types* get_proc_shr_mem(int key);
+int init();
 
-all_types* malloc_proc_shr_mem(int key);
+process* malloc_proc_shr_mem();
 
-all_types* get_first_proc(int key);
+int free_proc_shr_mem(process* proc);
 
-int set_first_proc(all_types* proc);
+int free_all_proc_shr_mem();
 
-all_types* get_last_proc(int key);
+process* get_first_proc();
 
-int set_last_proc(all_types* proc);
+int set_first_proc(process* proc);
 
-int index_proc(all_types* proc);
+process* get_last_proc();
 
-all_types* next_proc(all_types* proc);
+int set_last_proc(process* proc);
 
-all_types* last_proc(all_types* proc);
+process* prev_proc(process *);
+
+process* next_proc(process *);
+
+int index_proc(process* proc);
+
+process* next_proc(process* proc);
+
+process* last_proc(process* proc);
+
+int get_unique_id_proc();
 
 #endif

@@ -38,6 +38,9 @@ int main(int argc, char const *argv[]) {
 		exit(1);
 	}
 
+	// attach the shared mem for all proc_shr functions
+	init();
+
 	// set the number of free processes
 	sem_op(idsem_free_proc, atoi(argv[1]));
 

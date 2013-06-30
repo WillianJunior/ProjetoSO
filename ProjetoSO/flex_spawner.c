@@ -7,7 +7,7 @@ int main(int argc, char const *argv[]) {
 	int idsem_free_proc;
 	int idqueue;
 	int state;
-	all_types *proc;
+	process *proc;
 
 	// start the semaphore
 	if ((idsem_free_proc = semget(FREE_PROC_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
@@ -43,13 +43,13 @@ int main(int argc, char const *argv[]) {
 			if ((pid = fork()) == 0) {
 				// execute the process from the fork of the wrapper
 				printf("[Executer] Now will execute the new program\n");
-				execl(proc->p.exec_path, proc->p.exec_name, proc->p.argv, (char *) 0);
+				execl(proc->exec_path, proc->exec_name, proc->argv, (char *) 0);
 			}
 
 			// set timeout
 			printf("[Wrapper] Setting timeout alarm\n");
 			signal(SIGALRM, proc_killer);
-			alarm(proc->p.max_time);
+			alarm(proc->max_time);
 			printf("[Wrapper] Waiting for the program to finish...\n");
 			wait(&state);
 			alarm(0);
@@ -57,10 +57,10 @@ int main(int argc, char const *argv[]) {
 			printf("[Wrapper] Program finished\n");
 			
 			// refresh the status of the process
-			proc->p.status = FINISHED; // not working
+			proc->status = FINISHED; // not working
 
 			// send the signal of free process
-			sem_op(idsem_free_proc, proc->p.n_proc);
+			sem_op(idsem_free_proc, proc->n_proc);
 
 			return state;
 		}
