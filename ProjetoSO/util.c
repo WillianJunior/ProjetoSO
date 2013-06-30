@@ -26,7 +26,7 @@ char* sec2str(unsigned long seconds) {
 	return str;
 }
 
-void proc_pretty_printer (struct process proc) {
+/*void proc_pretty_printer (struct process proc) {
 
 	printf("%-8d", proc.n_req);
 	printf("%-12s", sec2str(proc.max_time));
@@ -48,8 +48,8 @@ void proc_pretty_printer (struct process proc) {
 	// printf("next_index: %d\n", proc.next_index);
 	// printf("status: %s\n", proc.status? "PENDING" : "RUNNING");
 	// printf("\n");
-}
-/*void proc_pretty_printer (union all_types proc) {
+}*/
+void proc_pretty_printer (union all_types proc) {
 	printf("Process: \n");
 	printf("exec_path: %s\n", proc.p.exec_path);
 	printf("max_time: %lu\n", proc.p.max_time);
@@ -59,7 +59,7 @@ void proc_pretty_printer (struct process proc) {
 	printf("next_index: %d\n", proc.next_index);
 	printf("status: %s\n", proc.p.status?"pending":"running");
 	printf("\n");
-}*/
+}
 
 void sem_op (int idsem_free_proc, int n) {
 	sem_op_s.sem_num = 0;

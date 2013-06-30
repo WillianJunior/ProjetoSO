@@ -11,7 +11,7 @@
 
 #include "basic_types.h"
 #include "util.h"
-#include "shrmem.h"
+#include "flex_shrmem.h"
 
 void print_table_header();
 

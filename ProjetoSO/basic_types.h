@@ -45,6 +45,7 @@ struct flex_process {
 	char argv[PROC_ARGV_SIZE];
 	float priority_coef;
 	enum status status;
+	int n_req;
 };
 
 struct priority_list {

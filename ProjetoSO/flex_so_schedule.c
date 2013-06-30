@@ -1,4 +1,4 @@
-#include "so_schedule.h"
+#include "flex_so_schedule.h"
 
 int idsem_free_proc;
 int idsem_sch_submit;
@@ -12,7 +12,7 @@ int main(int argc, char const *argv[]) {
 	int pid_fp;
 	int pid_np;
 	int found = 0;
-	process *proc;
+	all_types *proc;
 
 	// check the input parameters
 	if (argc != 2) {
@@ -38,7 +38,7 @@ int main(int argc, char const *argv[]) {
 		exit(1);
 	}
 
-	// set the number of free processes
+	// set the number of free all_typeses
 	sem_op(idsem_free_proc, atoi(argv[1]));
 
 	// set the daemons waiters
@@ -46,24 +46,24 @@ int main(int argc, char const *argv[]) {
 	signal(SIGUSR2, new_submit_daemon);
 
 	while (1) {
-		// if there is at least one free process it won't block
+		// if there is at least one free all_types it won't block
 		sem_op(idsem_free_proc, -1);
 		printf("-------------------------------------------------------\n");
 
-		// run through the process list and recover a new process
-		printf("Searching for a process...\n");
+		// run through the all_types list and recover a new all_types
+		printf("Searching for a all_types...\n");
 		least_proc = 100000; // large num
 		pending = 0;
 		if ((proc = get_first_proc()) != 0) {
 			do {
-				if (proc->n_proc < least_proc && proc->status == PENDING)
-					least_proc = proc->n_proc;
+				if (proc->p.n_proc < least_proc && proc->p.status == PENDING)
+					least_proc = proc->p.n_proc;
 				// search
-				if (proc->status == PENDING) {
+				if (proc->p.status == PENDING) {
 					pending = 1;
-					if (proc->n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
-						// change the process state
-						proc->status = RUNNING;
+					if (proc->p.n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
+						// change the all_types state
+						proc->p.status = RUNNING;
 						printf("Found!!!\n");
 						proc_pretty_printer(*proc);
 						found = 1;
@@ -72,22 +72,22 @@ int main(int argc, char const *argv[]) {
 				}
 			} while((proc = next_proc(proc)) != 0);
 		} else
-			printf("There isn't any process\n");
+			printf("There isn't any all_types\n");
 
 		if (found) {
-			// alocate the processes
-			if (proc->n_proc != 1)
-				sem_op(idsem_free_proc, 1 - proc->n_proc);
+			// alocate the all_typeses
+			if (proc->p.n_proc != 1)
+				sem_op(idsem_free_proc, 1 - proc->p.n_proc);
 
 			// send it to the spawner to be executed
-			if(msgsnd(idqueue, proc, sizeof(process), 0) < 0)
-				printf("Error sending process to be executed: %s\n", strerror(errno));
+			if(msgsnd(idqueue, proc, sizeof(all_types), 0) < 0)
+				printf("Error sending all_types to be executed: %s\n", strerror(errno));
 			found = 0;
 			printf("Sent to be executed\n");
 
 		} else {
-			// wait for a new process to be added or a free process signal
-			// create the freed process daemon
+			// wait for a new all_types to be added or a free all_types signal
+			// create the freed all_types daemon
 			if ((pid_fp = fork()) == 0)
 				pause();
 			
@@ -122,10 +122,10 @@ void freed_proc_daemon () {
 	if (pending) {
 		sem_op(idsem_free_proc, 1-least_proc);
 		sem_op(idsem_free_proc, least_proc);
-		printf("Freed process\n");
+		printf("Freed all_types\n");
 		exit(0);
 	} else {
-		printf("All process are already free\n");
+		printf("All all_types are already free\n");
 		pause();
 	}
 }

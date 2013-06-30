@@ -1,4 +1,4 @@
-#include "so_list.h"
+#include "flex_so_list.h"
 
 void print_table_header() {
 	printf("%-8s", "Nreq");
@@ -11,7 +11,7 @@ void print_table_header() {
 }
 
 void print_process_list() {
-	process* p;
+	all_types* p;
 	p = get_first_proc();
 	if(!p) {
 		printf("The processes' table is empty. Try running 'so_submit <process file>' first.\n");

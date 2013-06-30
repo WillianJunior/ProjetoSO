@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "so_submit.h"
+#include "flex_so_submit.h"
 
-int parse_process_list(struct process **p_list, const size_t size, FILE* fp) {
+int parse_process_list(union all_types **p_list, const size_t size, FILE* fp) {
     char str[PROC_EXEC_PATH_SIZE];
     char filename[PROC_EXEC_PATH_SIZE];
     char params[PROC_EXEC_PATH_SIZE];
@@ -14,9 +14,9 @@ int parse_process_list(struct process **p_list, const size_t size, FILE* fp) {
     int i, j, k;
     char hours[3], minutes[3], seconds[3];
     int n_proc;
-    process *p_aux;
+    all_types *p_aux;
 
-    (*p_list) = (process *) 0;
+    (*p_list) = (all_types *) 0;
     i = 0;
     j = 0;
     do { 
@@ -59,18 +59,18 @@ int parse_process_list(struct process **p_list, const size_t size, FILE* fp) {
             }
             if(i == 0) {
                 if(!(*p_list)) {
-                    (*p_list) = (process *) malloc(sizeof(process));
-                    (*p_list)->prev = (process *) 0;
+                    (*p_list) = (all_types *) malloc(sizeof(all_types));
+                    (*p_list)->prev = (all_types *) 0;
                     p_aux = (*p_list);
                 } else {
-                    p_aux->next = (process *) malloc(sizeof(process));
+                    p_aux->next = (all_types *) malloc(sizeof(all_types));
                     p_aux->next->prev = p_aux;
                     p_aux = p_aux->next;
                 }
 
-                strcpy(p_aux->exec_name, filename); // only works for the actual path NEED TO BE CORRECTED
-                strcpy(p_aux->exec_path, filename);
-                p_aux->status = PENDING;
+                strcpy(p_aux->p.exec_name, filename); // only works for the actual path NEED TO BE CORRECTED
+                strcpy(p_aux->p.exec_path, filename);
+                p_aux->p.status = PENDING;
                 hours[0] = max_time[0]; 
                 hours[1] = max_time[1]; 
                 hours[2] = '\0';
@@ -80,12 +80,12 @@ int parse_process_list(struct process **p_list, const size_t size, FILE* fp) {
                 seconds[0] = max_time[6]; 
                 seconds[1] = max_time[7]; 
                 seconds[2] = '\0';
-                p_aux->max_time = atoi(hours) * 3600 + atoi(minutes) * 60 + atoi(seconds);
-                p_aux->n_proc = (n_proc = atoi(num_proc)) < 0 ? 0 : n_proc; 
-                strcpy(p_aux->argv, params);
-                p_aux->n_req = get_unique_id_proc();
+                p_aux->p.max_time = atoi(hours) * 3600 + atoi(minutes) * 60 + atoi(seconds);
+                p_aux->p.n_proc = (n_proc = atoi(num_proc)) < 0 ? 0 : n_proc; 
+                strcpy(p_aux->p.argv, params);
+                p_aux->p.n_req = get_unique_id_proc();
 
-                p_aux->next = (process *) 0;
+                p_aux->next = (all_types *) 0;
                 j++;
             }
         }
@@ -94,7 +94,7 @@ int parse_process_list(struct process **p_list, const size_t size, FILE* fp) {
     return j;
 }
 
-int print_proc_list(process *proc_list) {
+int print_proc_list(all_types *proc_list) {
     while(proc_list) {
         proc_pretty_printer(*proc_list);
         proc_list = proc_list->next;
@@ -105,21 +105,21 @@ int print_proc_list(process *proc_list) {
 /**
  * Takes a list and appends it at the end of the table.
  */
-int append_proc_list(process *proc_list) {
-    process *aux;
+int append_proc_list(all_types *proc_list) {
+    all_types *aux;
 
     aux = get_last_proc();
     while(proc_list) {
         if (!aux) { // Empty list
             aux = malloc_proc_shr_mem();
-            // Using memcpy because we can change 'struct process' flexibly.
+            // Using memcpy because we can change 'struct all_types' flexibly.
             // We can add or remove any field, as long as we keep:
             //    prev, next, prev_index and next_index. :)
-            memcpy(aux, proc_list, sizeof(process));
+            memcpy(aux, proc_list, sizeof(all_types));
             set_first_proc(aux);
         } else {
             aux->next = malloc_proc_shr_mem();
-            memcpy(aux->next, proc_list, sizeof(process));
+            memcpy(aux->next, proc_list, sizeof(all_types));
             aux->next_index = index_proc(aux->next);
             aux->next->prev = aux;
             aux->next->prev_index = index_proc(aux);
@@ -134,15 +134,14 @@ int append_proc_list(process *proc_list) {
 int main(int argc, char *argv[]) {
 
     FILE *fp;
-    process *p_list;
+    all_types *p_list;
 
-    int p_count;
     const char* filename;
 
     int idsem_sch_submit;
 
     if(argc < 2) {
-        fprintf(stderr, "Usage: so_submit <process file>.\n");
+        fprintf(stderr, "Usage: so_submit <all_types file>.\n");
         exit(1);
     }
 
@@ -163,10 +162,10 @@ int main(int argc, char *argv[]) {
     // initialize memory manager
     init();
 
-    p_count = parse_process_list(&p_list, SHM_BASE_PROC_NUMBER, fp);
+    parse_process_list(&p_list, SHM_BASE_PROC_NUMBER, fp);
     fclose(fp);
 
-    // push the processes read into shared memory's process vector
+    // push the all_typeses read into shared memory's all_types vector
     append_proc_list(p_list);
 
     // send a signal to the scheduler
