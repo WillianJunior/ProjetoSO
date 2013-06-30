@@ -17,7 +17,7 @@ clean_all: clean_ipc
 	-rm so_submit so_list spawner so_schedule
 
 clean_flex: clean_ipc
-	-rm flex_so_submit flex_so_list spawner so_schedule
+	-rm flex_so_submit flex_so_list flex_spawner flex_so_schedule
 
 so_submit: so_submit.c so_submit.h util.c util.h shrmem.c shrmem.h
 	gcc -Wall so_submit.c util.c shrmem.c -o so_submit

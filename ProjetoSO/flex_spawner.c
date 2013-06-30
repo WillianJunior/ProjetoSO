@@ -43,13 +43,13 @@ int main(int argc, char const *argv[]) {
 			if ((pid = fork()) == 0) {
 				// execute the all_types from the fork of the wrapper
 				printf("[Executer] Now will execute the new program\n");
-				execl(proc->p.exec_path, proc->p.exec_name, proc->p.argv, (char *) 0);
+				execl(proc->flex_proc.p.exec_path, proc->flex_proc.p.exec_name, proc->flex_proc.p.argv, (char *) 0);
 			}
 
 			// set timeout
 			printf("[Wrapper] Setting timeout alarm\n");
 			signal(SIGALRM, proc_killer);
-			alarm(proc->p.max_time);
+			alarm(proc->flex_proc.p.max_time);
 			printf("[Wrapper] Waiting for the program to finish...\n");
 			wait(&state);
 			alarm(0);
@@ -57,10 +57,10 @@ int main(int argc, char const *argv[]) {
 			printf("[Wrapper] Program finished\n");
 			
 			// refresh the status of the all_types
-			proc->p.status = FINISHED; // not working
+			proc->flex_proc.p.status = FINISHED; // not working
 
 			// send the signal of free all_types
-			sem_op(idsem_free_proc, proc->p.n_proc);
+			sem_op(idsem_free_proc, proc->flex_proc.p.n_proc);
 
 			return state;
 		}

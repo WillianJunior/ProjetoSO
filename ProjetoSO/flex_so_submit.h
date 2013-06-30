@@ -12,7 +12,7 @@
 #include "flex_shrmem.h"
 #include "util.h"
 
-int parse_process_list(union all_types **p_list, const size_t size, FILE* fp);
+int parse_process_list(struct all_types **p_list, const size_t size, FILE* fp);
 
 
 #endif

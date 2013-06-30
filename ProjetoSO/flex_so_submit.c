@@ -4,7 +4,7 @@
 
 #include "flex_so_submit.h"
 
-int parse_process_list(union all_types **p_list, const size_t size, FILE* fp) {
+int parse_process_list(struct all_types **p_list, const size_t size, FILE* fp) {
     char str[PROC_EXEC_PATH_SIZE];
     char filename[PROC_EXEC_PATH_SIZE];
     char params[PROC_EXEC_PATH_SIZE];
@@ -68,9 +68,9 @@ int parse_process_list(union all_types **p_list, const size_t size, FILE* fp) {
                     p_aux = p_aux->next;
                 }
 
-                strcpy(p_aux->p.exec_name, filename); // only works for the actual path NEED TO BE CORRECTED
-                strcpy(p_aux->p.exec_path, filename);
-                p_aux->p.status = PENDING;
+                strcpy(p_aux->flex_proc.p.exec_name, filename); // only works for the actual path NEED TO BE CORRECTED
+                strcpy(p_aux->flex_proc.p.exec_path, filename);
+                p_aux->flex_proc.p.status = PENDING;
                 hours[0] = max_time[0]; 
                 hours[1] = max_time[1]; 
                 hours[2] = '\0';
@@ -80,10 +80,10 @@ int parse_process_list(union all_types **p_list, const size_t size, FILE* fp) {
                 seconds[0] = max_time[6]; 
                 seconds[1] = max_time[7]; 
                 seconds[2] = '\0';
-                p_aux->p.max_time = atoi(hours) * 3600 + atoi(minutes) * 60 + atoi(seconds);
-                p_aux->p.n_proc = (n_proc = atoi(num_proc)) < 0 ? 0 : n_proc; 
-                strcpy(p_aux->p.argv, params);
-                p_aux->p.n_req = get_unique_id_proc();
+                p_aux->flex_proc.p.max_time = atoi(hours) * 3600 + atoi(minutes) * 60 + atoi(seconds);
+                p_aux->flex_proc.p.n_proc = (n_proc = atoi(num_proc)) < 0 ? 0 : n_proc; 
+                strcpy(p_aux->flex_proc.p.argv, params);
+                p_aux->flex_proc.p.n_req = get_unique_id_proc();
 
                 p_aux->next = (all_types *) 0;
                 j++;
@@ -124,6 +124,7 @@ int append_proc_list(all_types *proc_list) {
             aux->next->prev = aux;
             aux->next->prev_index = index_proc(aux);
             aux = aux->next;
+
         }
         set_last_proc(aux);
         proc_list = proc_list->next;
@@ -165,7 +166,7 @@ int main(int argc, char *argv[]) {
     parse_process_list(&p_list, SHM_BASE_PROC_NUMBER, fp);
     fclose(fp);
 
-    // push the all_typeses read into shared memory's all_types vector
+    // push the all_types read into shared memory's all_types vector
     append_proc_list(p_list);
 
     // send a signal to the scheduler

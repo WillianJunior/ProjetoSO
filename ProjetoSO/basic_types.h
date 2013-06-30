@@ -53,19 +53,21 @@ struct priority_list {
 	int priority_coef;
 };
 
-union all_types {
+struct all_types {
+	union flex_proc {
+		struct flex_process p;
+	} flex_proc;
 	int prev_index;
 	int next_index;
-	union all_types* prev;
-	union all_types* next;
-	struct flex_process p;
+	struct all_types* prev;
+	struct all_types* next;
 	struct priority_list pl;
 };
 
 typedef struct process process;
 typedef struct flex_process flex_process;
 typedef struct priority_list priority_list;
-typedef union all_types all_types;
+typedef struct all_types all_types;
 
 struct sembuf sem_op_s;
 

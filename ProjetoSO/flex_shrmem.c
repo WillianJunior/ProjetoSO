@@ -109,8 +109,11 @@ all_types* malloc_proc_shr_mem() {
         if(found) break;
     }
 
-    if(!found) return (union all_types*) 0; // Return NULL
+    if(!found) return (struct all_types*) 0; // Return NULL
     //DEBUG
+    // printf("(*shm) = %d\n", *shm);
+    // printf("*(shm+1) = %d\n", *(shm+1));
+    // printf("*(shm+2) = %d\n", *(shm+2));
     // printf("index = %d\n", i);
     // printf("position = %d\n\n", j);
     shm_map_set(i, j);

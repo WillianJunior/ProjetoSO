@@ -10,7 +10,7 @@
 
 char* sec2str(unsigned long seconds);
 
-void proc_pretty_printer(union all_types proc);
+void proc_pretty_printer(struct all_types proc);
 //void proc_pretty_printer(struct process proc);
 
 // blocking semop

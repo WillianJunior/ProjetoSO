@@ -56,14 +56,14 @@ int main(int argc, char const *argv[]) {
 		pending = 0;
 		if ((proc = get_first_proc()) != 0) {
 			do {
-				if (proc->p.n_proc < least_proc && proc->p.status == PENDING)
-					least_proc = proc->p.n_proc;
+				if (proc->flex_proc.p.n_proc < least_proc && proc->flex_proc.p.status == PENDING)
+					least_proc = proc->flex_proc.p.n_proc;
 				// search
-				if (proc->p.status == PENDING) {
+				if (proc->flex_proc.p.status == PENDING) {
 					pending = 1;
-					if (proc->p.n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
+					if (proc->flex_proc.p.n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
 						// change the all_types state
-						proc->p.status = RUNNING;
+						proc->flex_proc.p.status = RUNNING;
 						printf("Found!!!\n");
 						proc_pretty_printer(*proc);
 						found = 1;
@@ -76,8 +76,8 @@ int main(int argc, char const *argv[]) {
 
 		if (found) {
 			// alocate the all_typeses
-			if (proc->p.n_proc != 1)
-				sem_op(idsem_free_proc, 1 - proc->p.n_proc);
+			if (proc->flex_proc.p.n_proc != 1)
+				sem_op(idsem_free_proc, 1 - proc->flex_proc.p.n_proc);
 
 			// send it to the spawner to be executed
 			if(msgsnd(idqueue, proc, sizeof(all_types), 0) < 0)
