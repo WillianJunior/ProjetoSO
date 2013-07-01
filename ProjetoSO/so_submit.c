@@ -295,8 +295,8 @@ int main(int argc, char *argv[]) {
     fclose(fp);
 
     // get the process table access
-    //sem_op(idsem_proc_table_mutex, 0);
-    //sem_op(idsem_proc_table_mutex, 1);
+    sem_op(idsem_proc_table_mutex, 0);
+    sem_op(idsem_proc_table_mutex, 1);
 
     // add the processes to the index lists
     refresh_index_list(p_list, COEF_LIST_1_SHM_KEY, sjf_schd);
@@ -306,7 +306,7 @@ int main(int argc, char *argv[]) {
     append_proc_list(p_list);
 
     // release the process table
-    //sem_op(idsem_proc_table_mutex, -1);
+    sem_op(idsem_proc_table_mutex, -1);
 
     // send a signal to the scheduler
     sem_op_nblock(idsem_sch_submit, -1);

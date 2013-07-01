@@ -95,8 +95,8 @@ int main(int argc, char const *argv[]) {
 		sem_op(idsem_esc_crit, -1);
 
 		// ... nor change the process list itself
-		//sem_op(idsem_proc_table_mutex, 0);
-		//sem_op(idsem_proc_table_mutex, 1);
+		sem_op(idsem_proc_table_mutex, 0);
+		sem_op(idsem_proc_table_mutex, 1);
 		//printf("lock\n");
 		
 		// try to find out a executable process
@@ -135,7 +135,7 @@ int main(int argc, char const *argv[]) {
 		sem_op(idsem_esc_crit, 1);
 
 		// ... and also unlock the process table
-		//sem_op(idsem_proc_table_mutex, -1);
+		sem_op(idsem_proc_table_mutex, -1);
 		//printf("unlock\n");
 
 		if (found) {
@@ -143,7 +143,7 @@ int main(int argc, char const *argv[]) {
 			sem_op(idsem_esc_count, 1);	
 
 			// alocate the processes
-			sem_op(idsem_free_proc, -proc->flex_types.p.n_proc);
+			sem_op(idsem_free_proc, -(proc->flex_types.p.n_proc));
 
 			// send it to the spawner to be executed
 			proc_index = index_proc(proc);

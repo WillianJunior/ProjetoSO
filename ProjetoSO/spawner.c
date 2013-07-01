@@ -73,10 +73,10 @@ int main(int argc, char const *argv[]) {
 			alarm(proc->flex_types.p.max_time);
 
 			// set the initial time of execution using the mutex (NOT WORKING!!! MAYBE BECAUSE OF THE ALARM)
-			//sem_op(idsem_proc_table_mutex, 0);
-			//sem_op(idsem_proc_table_mutex, 1);
+			sem_op(idsem_proc_table_mutex, 0);
+			sem_op(idsem_proc_table_mutex, 1);
 			proc->flex_types.p.start_sec = time(NULL);
-			//sem_op(idsem_proc_table_mutex, -1);
+			sem_op(idsem_proc_table_mutex, -1);
 
 			// wait for the process to finish
 			printf("[Wrapper] Waiting for the program to finish...\n");
@@ -90,11 +90,12 @@ int main(int argc, char const *argv[]) {
 			sem_op(idsem_free_proc, proc->flex_types.p.n_proc);
 
 			// remove the process from the process table also using the mutex (NOT WORKING!!! MAYBE BECAUSE OF THE ALARM)
-			//sem_op(idsem_proc_table_mutex, 0);
-			//sem_op(idsem_proc_table_mutex, 1);
+			sem_op(idsem_proc_table_mutex, 0);
+			sem_op(idsem_proc_table_mutex, 1);
+            printf("###### BREAK 1 #######\n");
 			remove_proc_shr_mem(proc);
-			//sem_op(idsem_proc_table_mutex, -1);
-
+            printf("###### BREAK 2 #######\n");
+			sem_op(idsem_proc_table_mutex, -1);
 
 			return state;
 		}

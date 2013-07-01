@@ -332,15 +332,19 @@ all_types* get_proc_by_index(int index) {
 }
 
 void remove_proc_shr_mem(all_types* proc) {
-    // free all the index lists
-    init(COEF_LIST_1_SHM_KEY);
-    free_proc_shr_mem(get_proc_by_index(proc->flex_types.p.sjf_sch_index));
-
-    init(COEF_LIST_2_SHM_KEY);
-    free_proc_shr_mem(get_proc_by_index(proc->flex_types.p.ljf_sch_index));
-        // as before, this needs to be more flexible (easier to add a new scheduler to the round table)
+    int index1 = proc->flex_types.p.sjf_sch_index;
+    int index2 = proc->flex_types.p.ljf_sch_index;
 
     // finaly free the process
-    init(PROC_TABLE_SHM_KEY);
+    //init(PROC_TABLE_SHM_KEY);
     free_proc_shr_mem(proc);
+
+    // free all the index lists
+    init(COEF_LIST_1_SHM_KEY);
+    free_proc_shr_mem(get_proc_by_index(index1));
+
+    init(COEF_LIST_2_SHM_KEY);
+    free_proc_shr_mem(get_proc_by_index(index2));
+    // as before, this needs to be more flexible (easier to add a new scheduler to the round table)
+
 }
