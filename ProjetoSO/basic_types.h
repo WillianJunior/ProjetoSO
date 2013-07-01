@@ -5,7 +5,7 @@
 
 #define SHM_BASE_PROC_NUMBER 50
 
-#define SHUTDOWN_TIMEOUT 30
+#define SHUTDOWN_TIMEOUT 3
 
 #define PROC_EXEC_NAME_SIZE 50
 #define PROC_EXEC_PATH_SIZE 100
@@ -69,5 +69,6 @@ typedef struct all_types all_types;
 
 struct sembuf sem_op_s1;
 struct sembuf sem_op_s2;
+struct sembuf sem_op_s3;
 
 #endif

@@ -32,7 +32,7 @@ int main () {
 
 	// wait for the semaphore of process. if all processes are free then all processes have stoped
 	msgrcv(idqueue_shutdown, nproc, sizeof(int), 0, 0);
-	sem_op(idsem_free_proc, -(*nproc));
+	sem_op_sens(idsem_free_proc, -(*nproc));
 
 	
 	// disarm the alarm
@@ -73,7 +73,7 @@ void hard_shutdown () {
 				proc = aux;
 			} else 
 				proc = next_proc(proc);
-		while(proc != 0);
+		while(proc != NULL);
 	} else
 		printf("There isn't any process\n");
 

@@ -76,11 +76,19 @@ int sem_op (int idsem, int n) {
 	return returnv;
 }
 
-int sem_op_nblock (int idsem, int n) {
+int sem_op_sens (int idsem, int n) {
 	sem_op_s2.sem_num = 0;
 	sem_op_s2.sem_op = n;
-	sem_op_s2.sem_flg = IPC_NOWAIT;
+	sem_op_s2.sem_flg = 0;
+	// what if quantum happens here? and if it came after the round table alert that executed sem_reset
 	return semop(idsem, &sem_op_s2, 1);
+}
+
+int sem_op_nblock (int idsem, int n) {
+	sem_op_s3.sem_num = 0;
+	sem_op_s3.sem_op = n;
+	sem_op_s3.sem_flg = IPC_NOWAIT;
+	return semop(idsem, &sem_op_s3, 1);
 }
 
 void sem_reset (int idsem) {

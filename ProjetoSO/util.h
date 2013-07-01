@@ -18,6 +18,9 @@ void proc_pretty_printer(struct all_types proc);
 // blocking semop
 int sem_op (int idsem, int n);
 
+// blocking semop sensitive to signals
+int sem_op_sens (int idsem, int n);
+
 // non-blocking semop
 int sem_op_nblock (int idsem, int n);
 
