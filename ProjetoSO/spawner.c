@@ -7,8 +7,9 @@ int main(int argc, char const *argv[]) {
 	int idsem_free_proc;
 	int idqueue;
 	int state;
+	int proc_index;
 	all_types *proc;
-	all_types *proc_temp;
+	//all_types *proc_temp;
 
 	// start the semaphore
 	if ((idsem_free_proc = semget(FREE_PROC_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
@@ -26,18 +27,16 @@ int main(int argc, char const *argv[]) {
 	signal(SIGALRM, zombie_killer);
 	alarm(ZOMBIE_KILLER_TIMEOUT);
 
-	// malloc the proc
-	proc = malloc(sizeof(all_types));
-
 	init(PROC_TABLE_SHM_KEY);
 
 	while (1) {
 		// get the all_types request from the message queue
 		printf("[Breeder] Waiting a new all_types...\n");
-		while (msgrcv(idqueue, proc, sizeof(all_types), 0, 0) < 0);
+		while (msgrcv(idqueue, &proc_index, sizeof(int), 0, 0) < 0);
+		proc = get_proc_by_index(proc_index);
 
 		printf("[Breeder] all_types received\n");
-		proc_pretty_printer(*proc);
+		proc_index_test_pretty_printer(*proc);
 
 		// fork himself to a wrapper to set and treat the timeout
 		if ((pid = fork()) == 0) {
@@ -47,16 +46,16 @@ int main(int argc, char const *argv[]) {
 			if ((pid = fork()) == 0) {
 				// execute the all_types from the fork of the wrapper
 				printf("[Executer] Now will execute the new program\n");
-				execl(proc->flex_proc.p.exec_path, proc->flex_proc.p.exec_name, proc->flex_proc.p.argv, (char *) 0);
+				execl(proc->flex_proc.pl.testp.exec_path, proc->flex_proc.pl.testp.exec_name, proc->flex_proc.pl.testp.argv, (char *) 0);
 			}
 
 			// set timeout
 			printf("[Wrapper] Setting timeout alarm\n");
 			signal(SIGALRM, proc_killer);
-			alarm(proc->flex_proc.p.max_time);
+			alarm(proc->flex_proc.pl.testp.max_time);
 
 			// set the initial time of execution
-			proc->flex_proc.p.start_sec = time(NULL);
+			proc->flex_proc.pl.testp.start_sec = time(NULL);
 
 			// wait for the process to finish
 			printf("[Wrapper] Waiting for the program to finish...\n");
@@ -67,10 +66,10 @@ int main(int argc, char const *argv[]) {
 			
 			// refresh the status of the all_types
 			printf("index: %d\n", index_proc(proc));
-			proc->flex_proc.p.status = FINISHED; // not working
+			proc->flex_proc.pl.testp.status = FINISHED; // not working
 
 			// send the signal of free all_types
-			sem_op(idsem_free_proc, proc->flex_proc.p.n_proc);
+			sem_op(idsem_free_proc, proc->flex_proc.pl.testp.n_proc);
 
 			return state;
 		}

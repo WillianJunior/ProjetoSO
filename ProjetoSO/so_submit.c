@@ -147,7 +147,7 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
     all_types *index_aux;
     int priority_coef;
     // get the last process index already on shared memory
-    int proc_index;
+    //int proc_index;
 
     // initialize process table memory manager
     init(PROC_TABLE_SHM_KEY);

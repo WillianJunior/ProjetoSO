@@ -15,6 +15,7 @@ int main(int argc, char const *argv[]) {
 	int pid_fp;
 	int pid_np;
 	int found = 0;
+	int proc_index;
 	all_types *proc;
 
 	// check the input parameters
@@ -59,7 +60,7 @@ int main(int argc, char const *argv[]) {
 	sem_op(idsem_esc_crit, 1);
 
 	// attach the shared mem for all proc_shr functions
-	init(PROC_TABLE_SHM_KEY);
+	init(COEF_LIST_1_SHM_KEY);
 
 	// set the number of free processes
 	sem_op(idsem_free_proc, atoi(argv[1]));
@@ -83,16 +84,16 @@ int main(int argc, char const *argv[]) {
 		// try to find out a executable process
 		if ((proc = get_first_proc()) != 0) {
 			do {
-				if (proc->flex_proc.p.n_proc < least_proc && proc->flex_proc.p.status == PENDING)
-					least_proc = proc->flex_proc.p.n_proc;
+				if (proc->flex_proc.pl.testp.n_proc < least_proc && proc->flex_proc.pl.testp.status == PENDING)
+					least_proc = proc->flex_proc.pl.testp.n_proc;
 				// search
-				if (proc->flex_proc.p.status == PENDING) {
+				if (proc->flex_proc.pl.testp.status == PENDING) {
 					pending = 1;
-					if (proc->flex_proc.p.n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
+					if (proc->flex_proc.pl.testp.n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
 						// change the process state
-						proc->flex_proc.p.status = RUNNING;
+						proc->flex_proc.pl.testp.status = RUNNING;
 						printf("Found!!!\n");
-						proc_pretty_printer(*proc);
+						proc_index_test_pretty_printer(*proc);
 						found = 1;
 						break;
 					}
@@ -109,11 +110,13 @@ int main(int argc, char const *argv[]) {
 			sem_op(idsem_esc_count, 1);			
 
 			// alocate the processes
-			if (proc->flex_proc.p.n_proc != 1)
-				sem_op(idsem_free_proc, 1 - proc->flex_proc.p.n_proc);
+			if (proc->flex_proc.pl.testp.n_proc != 1)
+				sem_op(idsem_free_proc, 1 - proc->flex_proc.pl.testp.n_proc);
 
 			// send it to the spawner to be executed
-			if(msgsnd(idqueue, proc, sizeof(all_types), 0) < 0)
+			proc_index = index_proc(proc);
+			printf("proc_index: %d\n", proc_index);
+			if(msgsnd(idqueue, &proc_index, sizeof(int), 0) < 0)
 				printf("Error sending process to be executed: %s\n", strerror(errno));
 			found = 0;
 			printf("Sent to be executed\n");
@@ -162,6 +165,13 @@ void round_table () {
 	
 	printf("[Round Table] Ok, time to change\n");
 	// change the actual scheduler, only works for 2 scheduleres, for now
+	if (scheduler) {
+		scheduler = 0;
+		init(COEF_LIST_1_SHM_KEY);
+	} else {
+		scheduler = 1;
+		init(COEF_LIST_2_SHM_KEY);
+	}
 	scheduler = scheduler?0:1;
 	sem_reset (idsem_esc_count);
 	alarm(ROUND_TABLE_TIMEOUT);

@@ -326,3 +326,7 @@ void shm_map_reset(int index, int position) { // TODO: Convert to macro.
     mask = ~(1 << position);
     *(bitmap+index) &= mask;
 }
+
+all_types* get_proc_by_index(int index) {
+    return (base_proc && index >= 0) ? (base_proc + index) : (all_types *) 0;
+}

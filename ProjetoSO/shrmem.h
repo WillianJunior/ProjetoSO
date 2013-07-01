@@ -42,4 +42,6 @@ all_types* last_proc(all_types* proc);
 
 int get_unique_id_proc();
 
+all_types* get_proc_by_index(int index);
+
 #endif
