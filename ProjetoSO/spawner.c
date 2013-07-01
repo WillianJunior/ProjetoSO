@@ -94,7 +94,7 @@ int main(int argc, char const *argv[]) {
 			sem_op(idsem_proc_table_mutex, 0);
 			sem_op(idsem_proc_table_mutex, 1);
 			proc->flex_types.p.start_sec = time(NULL);
-			proc->flex_types.p.start_sec = pid;
+			proc->flex_types.p.pid = pid;
 			sem_op(idsem_proc_table_mutex, -1);
 
 			// wait for the process to finish

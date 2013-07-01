@@ -56,26 +56,15 @@ void hard_shutdown () {
 	// kill all RUNNING processes
 	init(PROC_TABLE_SHM_KEY);
 
-	if ((proc = get_first_proc()) != 0) {
-		// kill all the firsts processes in the process list
-		while((proc = get_first_proc())->flex_types.p.status == RUNNING) {
-			printf("Gonna kill fst process: \n");
+	proc = get_first_proc();
+	while (proc) {
+		if (proc->flex_types.p.status == RUNNING) {
+			printf("Gonna kill process: \n");
 			proc_pretty_printer(*proc);
-			kill(proc->flex_types.p.pid, SIGKILL);
-		}
-		proc = get_first_proc();
-		do 
-			if (proc->flex_types.p.status == RUNNING) {
-				printf("Gonna kill process: \n");
-				proc_pretty_printer(*proc);
-				aux = next_proc(proc);
-				kill(proc->flex_types.p.pid, SIGKILL);
-				proc = aux;
-			} else 
-				proc = next_proc(proc);
-		while(proc != NULL);
-	} else
-		printf("There isn't any process\n");
-
-
+			aux = proc;
+			proc = next_proc(proc);
+			kill(aux->flex_types.p.pid, SIGKILL);
+		} else
+			proc = next_proc(proc);
+	}
 }

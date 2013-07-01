@@ -1,13 +1,4 @@
 % Comentário 1
-%params=
-%max_time=00:05:00
-%n_proc=1
-% Comentário 5
-filename=fibonacci
-params=
-max_time=00:05:00
-
-% Comentário 1
 filename=helloworld
 params=
 max_time=00:05:00
