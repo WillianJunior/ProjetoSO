@@ -45,35 +45,10 @@ void proc_pretty_printer(struct all_types proc) {
 	printf("%-12s", sec2str(proc.flex_types.p.max_time));
 	printf("%-10u", proc.flex_types.p.n_proc);
 	// TODO: Update the line below to print current time.
-	printf("%-12s", sec2str(proc.flex_types.p.max_time));
+	printf("%-12s", sec2str(proc.flex_types.p.start_sec?(time(NULL) - proc.flex_types.p.start_sec):0));
 	printf("%-12s", proc.flex_types.p.status ? "PENDING" : "RUNNING");
 	printf("%-s", strcat(strcat(proc.flex_types.p.exec_name, " "), proc.flex_types.p.argv));
 	printf("\n");
-
-	// printf("Process: \n");
-	// printf("exec_path: %s\n", proc.flex_types.p.exec_path);
-	// printf("max_time: %lu\n", proc.flex_types.p.max_time);
-	// printf("n_proc: %u\n", proc.flex_types.p.n_proc);
-	// printf("argv: %s\n", proc.flex_types.p.argv);
-	// printf("prev_index: %d\n", proc.prev_index);
-	// printf("next_index: %d\n", proc.next_index);
-	// printf("status: %s\n", proc.flex_types.p.status?"pending":"running");
-	// printf("\n");
-}
-
-void proc_index_test_pretty_printer(struct all_types proc) {
-	// need to search for the list linking the references
-
-	
-	/*printf("%-8d", proc.flex_types.pl.testp.n_req);
-	printf("%-12s", sec2str(proc.flex_types.pl.testp.max_time));
-	printf("%-10u", proc.flex_types.pl.testp.n_proc);
-	// TODO: Update the line below to print current time.
-	printf("%-12s", sec2str(proc.flex_types.pl.testp.max_time));
-	printf("%-12s", proc.flex_types.pl.testp.status ? "PENDING" : "RUNNING");
-	printf("%-s", strcat(strcat(proc.flex_types.pl.testp.exec_name, " "), proc.flex_types.pl.testp.argv));
-	printf("%-d", proc.flex_types.pl.priority_coef);
-	printf("\n");*/
 
 	// printf("Process: \n");
 	// printf("exec_path: %s\n", proc.flex_types.p.exec_path);

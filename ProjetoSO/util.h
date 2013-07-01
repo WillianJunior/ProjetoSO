@@ -3,8 +3,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 
 #include "basic_types.h"
 
@@ -12,7 +14,6 @@ char* sec2str(unsigned long seconds);
 
 //void proc_pretty_printer(struct process proc);
 void proc_pretty_printer(struct all_types proc);
-void proc_index_test_pretty_printer(struct all_types proc);
 
 // blocking semop
 int sem_op (int idsem, int n);
