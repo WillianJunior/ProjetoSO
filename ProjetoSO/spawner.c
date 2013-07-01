@@ -1,6 +1,7 @@
 #include "spawner.h"
 
 int pid;
+int end = 0;
 
 int main(int argc, char const *argv[]) {
 	
@@ -50,6 +51,11 @@ int main(int argc, char const *argv[]) {
 				exit(1);
 			}
 
+        // if the scheduler has received a SIGTERM it will become blocked until the SIGKILL
+		if (end)
+			while(1)
+				pause();
+    
 		printf("process index: %d\n", *proc_index);
 		proc = get_proc_by_index(*proc_index);
 
@@ -122,3 +128,8 @@ void proc_killer () {
 	printf("[all_types Killer] forced kill on all_types %d\n", pid);
 	kill(pid, SIGKILL);
 }
+
+void finalize () {
+
+}
+

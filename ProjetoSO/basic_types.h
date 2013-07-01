@@ -5,6 +5,8 @@
 
 #define SHM_BASE_PROC_NUMBER 50
 
+#define SHUTDOWN_TIMEOUT 30
+
 #define PROC_EXEC_NAME_SIZE 50
 #define PROC_EXEC_PATH_SIZE 100
 #define PROC_ARGV_SIZE 100
@@ -23,6 +25,7 @@
 #define COEF_LIST_2_SHM_KEY 0x192B
 
 #define SCH_SPW_MSGQ_KEY 0x1927
+#define SHTDWN_PIDS_MSGQ_KEY 0x1928
 
 enum status {
 	RUNNING,
@@ -39,6 +42,7 @@ struct process {
 	enum status status;
 	int n_req;
 	int start_sec;
+	int pid;
 	int sjf_sch_index;
 	int ljf_sch_index;
 };

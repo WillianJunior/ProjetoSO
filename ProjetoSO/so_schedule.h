@@ -21,5 +21,6 @@
 void round_table ();
 void freed_proc_daemon ();
 void new_submit_daemon ();
+void finalize ();
 
 #endif

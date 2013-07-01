@@ -1,5 +1,5 @@
-#ifndef SPAWNER_H
-#define SPAWNER_H
+#ifndef SO_SHUTDOWN_H
+#define SO_SHUTDOWN_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,14 +18,7 @@
 
 #include "shrmem.h"
 #include "util.h"
-#include "basic_types.h"
 
-#define ZOMBIE_KILLER_TIMEOUT 20
-
-void zombie_killer();
-
-void proc_killer ();
-
-void finalize ();
+void hard_shutdown();
 
 #endif
