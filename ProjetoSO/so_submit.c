@@ -61,34 +61,39 @@ int parse_process_list(struct all_types **p_list, const size_t size, FILE* fp) {
                     i=0;
             }
             if(i == 0) {
-                if(!(*p_list)) {
-                    (*p_list) = (all_types *) malloc(sizeof(all_types));
-                    (*p_list)->prev = (all_types *) 0;
-                    p_aux = (*p_list);
-                } else {
-                    p_aux->next = (all_types *) malloc(sizeof(all_types));
-                    p_aux->next->prev = p_aux;
-                    p_aux = p_aux->next;
+                n_proc = atoi(num_proc);
+                if(n_proc < 0)
+                   n_proc = 0; 
+                for(k=0; k<n_proc; k++) {
+                    if(!(*p_list)) {
+                        (*p_list) = (all_types *) malloc(sizeof(all_types));
+                        (*p_list)->prev = (all_types *) 0;
+                        p_aux = (*p_list);
+                    } else {
+                        p_aux->next = (all_types *) malloc(sizeof(all_types));
+                        p_aux->next->prev = p_aux;
+                        p_aux = p_aux->next;
+                    }
+
+                    strcpy(p_aux->flex_types.p.exec_name, filename); // only works for the actual path NEED TO BE CORRECTED
+                    strcpy(p_aux->flex_types.p.exec_path, filename);
+                    p_aux->flex_types.p.status = PENDING;
+                    hours[0] = max_time[0]; 
+                    hours[1] = max_time[1]; 
+                    hours[2] = '\0';
+                    minutes[0] = max_time[3]; 
+                    minutes[1] = max_time[4]; 
+                    minutes[2] = '\0';
+                    seconds[0] = max_time[6]; 
+                    seconds[1] = max_time[7]; 
+                    seconds[2] = '\0';
+                    p_aux->flex_types.p.max_time = atoi(hours) * 3600 + atoi(minutes) * 60 + atoi(seconds);
+                    p_aux->flex_types.p.n_proc = n_proc;
+                    strcpy(p_aux->flex_types.p.argv, params);
+                    p_aux->flex_types.p.n_req = get_unique_id_proc();
+
+                    p_aux->next = (all_types *) 0;
                 }
-
-                strcpy(p_aux->flex_types.p.exec_name, filename); // only works for the actual path NEED TO BE CORRECTED
-                strcpy(p_aux->flex_types.p.exec_path, filename);
-                p_aux->flex_types.p.status = PENDING;
-                hours[0] = max_time[0]; 
-                hours[1] = max_time[1]; 
-                hours[2] = '\0';
-                minutes[0] = max_time[3]; 
-                minutes[1] = max_time[4]; 
-                minutes[2] = '\0';
-                seconds[0] = max_time[6]; 
-                seconds[1] = max_time[7]; 
-                seconds[2] = '\0';
-                p_aux->flex_types.p.max_time = atoi(hours) * 3600 + atoi(minutes) * 60 + atoi(seconds);
-                p_aux->flex_types.p.n_proc = (n_proc = atoi(num_proc)) < 0 ? 0 : n_proc; 
-                strcpy(p_aux->flex_types.p.argv, params);
-                p_aux->flex_types.p.n_req = get_unique_id_proc();
-
-                p_aux->next = (all_types *) 0;
                 j++;
             }
         }
