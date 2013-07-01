@@ -205,7 +205,8 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
                 index_aux = malloc_proc_shr_mem();
 
                 memcpy(&(index_aux->flex_proc.pl.testp), &(proc_list->flex_proc.p), sizeof(flex_process));  // just for testing
-                //memcpy(index_aux, proc_list, sizeof(all_types));
+                //index_aux->flex_proc.pl.proc_index = proc_index;
+                //proc_list->flex_proc.p.sjf_sch_index = ...;
 
                 aux->next = index_aux;
                 aux->next_index = index_proc(index_aux);
@@ -215,7 +216,6 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
 
                 index_aux->flex_proc.pl.priority_coef = priority_coef;
 
-                //index_aux->flex_proc.pl.proc_index = proc_index;
 
                 set_last_proc(index_aux);
 

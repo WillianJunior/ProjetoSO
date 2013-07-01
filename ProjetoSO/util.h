@@ -15,7 +15,7 @@ void proc_pretty_printer(struct all_types proc);
 void proc_index_test_pretty_printer(struct all_types proc);
 
 // blocking semop
-void sem_op (int idsem, int n);
+int sem_op (int idsem, int n);
 
 // non-blocking semop
 int sem_op_nblock (int idsem, int n);

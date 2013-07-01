@@ -82,12 +82,11 @@ void proc_index_test_pretty_printer(struct all_types proc) {
 	// printf("\n");
 }
 
-void sem_op (int idsem, int n) {
+int sem_op (int idsem, int n) {
 	sem_op_s.sem_num = 0;
 	sem_op_s.sem_op = n;
 	sem_op_s.sem_flg = 0;
-	if ( semop(idsem, &sem_op_s, 1) < 0)
-		printf("error: %s\n", strerror(errno));
+	return semop(idsem, &sem_op_s, 1);
 }
 
 int sem_op_nblock (int idsem, int n) {

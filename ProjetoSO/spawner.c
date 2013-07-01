@@ -7,7 +7,7 @@ int main(int argc, char const *argv[]) {
 	int idsem_free_proc;
 	int idqueue;
 	int state;
-	int proc_index;
+	int *proc_index;
 	all_types *proc;
 	//all_types *proc_temp;
 
@@ -27,13 +27,20 @@ int main(int argc, char const *argv[]) {
 	signal(SIGALRM, zombie_killer);
 	alarm(ZOMBIE_KILLER_TIMEOUT);
 
-	init(PROC_TABLE_SHM_KEY);
+	init(COEF_LIST_1_SHM_KEY);
+
+	proc_index = malloc(sizeof(int));
 
 	while (1) {
 		// get the all_types request from the message queue
 		printf("[Breeder] Waiting a new all_types...\n");
-		while (msgrcv(idqueue, &proc_index, sizeof(int), 0, 0) < 0);
-		proc = get_proc_by_index(proc_index);
+		while (msgrcv(idqueue, proc_index, sizeof(int), 0, 0) < 0)// warning: can receive signal from round_table alarm NEED TO BE TREATED PROPERLY!!!!!!!!!!!
+			if (errno != EINTR){
+				printf("FUDEU! %s\n", strerror(errno));
+				exit(1);
+			}
+
+		proc = get_proc_by_index(*proc_index);
 
 		printf("[Breeder] all_types received\n");
 		proc_index_test_pretty_printer(*proc);
@@ -65,8 +72,7 @@ int main(int argc, char const *argv[]) {
 			printf("[Wrapper] Program finished\n");
 			
 			// refresh the status of the all_types
-			printf("index: %d\n", index_proc(proc));
-			proc->flex_proc.pl.testp.status = FINISHED; // not working
+			//proc->flex_proc.pl.testp.status = FINISHED; // not working
 
 			// send the signal of free all_types
 			sem_op(idsem_free_proc, proc->flex_proc.pl.testp.n_proc);

@@ -56,8 +56,8 @@ int main(int argc, char const *argv[]) {
 
 	// start the scheduler changer
 	signal(SIGALRM, round_table);
-	alarm(ROUND_TABLE_TIMEOUT);
-	sem_op(idsem_esc_crit, 1);
+	//alarm(ROUND_TABLE_TIMEOUT);
+	//sem_op(idsem_esc_crit, 1);
 
 	// attach the shared mem for all proc_shr functions
 	init(COEF_LIST_1_SHM_KEY);
@@ -68,10 +68,13 @@ int main(int argc, char const *argv[]) {
 	// set the daemons waiters
 	signal(SIGUSR1, freed_proc_daemon);
 	signal(SIGUSR2, new_submit_daemon);
+	//signal(SIGTERM, finalize);
 
 	while (1) {
 		// if there is at least one free process it won't block
-		sem_op(idsem_free_proc, -1);
+		printf("sem = %d\n", semctl(idsem_free_proc, 0, GETVAL));
+		sem_op(idsem_free_proc, -1);// warning: can receive signal from round_table alarm NEED TO BE TREATED PROPERLY!!!!!!!!!!!
+		sem_op(idsem_free_proc, 1);// warning: can receive signal from round_table alarm NEED TO BE TREATED PROPERLY!!!!!!!!!!!
 		printf("-------------------------------------------------------\n");
 
 		// run through the process list and recover a new process
@@ -79,7 +82,7 @@ int main(int argc, char const *argv[]) {
 		least_proc = 100000; // large num
 		pending = 0;
 		// semaphore to make sure that when the scheduler start to seek a proc it doesn't change to other scheduler list
-		sem_op(idsem_esc_crit, -1);
+		//sem_op(idsem_esc_crit, -1);
 
 		// try to find out a executable process
 		if ((proc = get_first_proc()) != 0) {
@@ -89,7 +92,7 @@ int main(int argc, char const *argv[]) {
 				// search
 				if (proc->flex_proc.pl.testp.status == PENDING) {
 					pending = 1;
-					if (proc->flex_proc.pl.testp.n_proc <= (semctl(idsem_free_proc, 0, GETVAL)+1)) {
+					if (proc->flex_proc.pl.testp.n_proc <= semctl(idsem_free_proc, 0, GETVAL)) {
 						// change the process state
 						proc->flex_proc.pl.testp.status = RUNNING;
 						printf("Found!!!\n");
@@ -103,19 +106,17 @@ int main(int argc, char const *argv[]) {
 			printf("There isn't any process\n");
 
 		// unlock the round_table to change the scheduler in use
-		sem_op(idsem_esc_crit, 1);
+		//sem_op(idsem_esc_crit, 1);
 
 		if (found) {
 			// increment the scheduler runned process counter
-			sem_op(idsem_esc_count, 1);			
+			//sem_op(idsem_esc_count, 1);	
 
 			// alocate the processes
-			if (proc->flex_proc.pl.testp.n_proc != 1)
-				sem_op(idsem_free_proc, 1 - proc->flex_proc.pl.testp.n_proc);
+			sem_op(idsem_free_proc, -proc->flex_proc.pl.testp.n_proc);
 
 			// send it to the spawner to be executed
 			proc_index = index_proc(proc);
-			printf("proc_index: %d\n", proc_index);
 			if(msgsnd(idqueue, &proc_index, sizeof(int), 0) < 0)
 				printf("Error sending process to be executed: %s\n", strerror(errno));
 			found = 0;
@@ -172,9 +173,8 @@ void round_table () {
 		scheduler = 1;
 		init(COEF_LIST_2_SHM_KEY);
 	}
-	scheduler = scheduler?0:1;
 	sem_reset (idsem_esc_count);
-	alarm(ROUND_TABLE_TIMEOUT);
+	//alarm(ROUND_TABLE_TIMEOUT);
 }
 
 void freed_proc_daemon () {
