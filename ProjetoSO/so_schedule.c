@@ -27,6 +27,8 @@ int main(int argc, char const *argv[]) {
 	int found = 0;
 	int proc_index;
 
+	int i;
+
 	all_types *proc;
 	all_types *indexed_proc;
 
@@ -124,8 +126,8 @@ int main(int argc, char const *argv[]) {
 		sem_op(idsem_esc_crit, -1);
 
 		// ... nor change the process list itself
-		sem_op(idsem_proc_table_mutex, 0);
-		sem_op(idsem_proc_table_mutex, 1);
+		//sem_op(idsem_proc_table_mutex, 0);
+		//sem_op(idsem_proc_table_mutex, 1);
 		//printf("lock\n");
 		
 		// try to find out a executable process
@@ -147,8 +149,6 @@ int main(int argc, char const *argv[]) {
 					pending = 1;
 					// racing condition: a process can be freed while running throught the list: treated with old_free_count
 					if (proc->flex_types.p.n_proc <= semctl(idsem_free_proc, 0, GETVAL)) {
-						// change the process state
-						proc->flex_types.p.status = RUNNING;
 						printf("Found!!!\n");
 						proc_pretty_printer(*proc);
 						found = 1;
@@ -164,7 +164,7 @@ int main(int argc, char const *argv[]) {
 		sem_op(idsem_esc_crit, 1);
 
 		// ... and also unlock the process table
-		sem_op(idsem_proc_table_mutex, -1);
+		//sem_op(idsem_proc_table_mutex, -1);
 		//printf("unlock\n");
 
 		// if the scheduler has received a SIGTERM it will become blocked until the SIGKILL
@@ -177,7 +177,10 @@ int main(int argc, char const *argv[]) {
 			sem_op(idsem_esc_count, 1);	
 
 			// alocate the processes
-			sem_op(idsem_free_proc, -(proc->flex_types.p.n_proc));
+			sem_op(idsem_free_proc, -proc->flex_types.p.n_proc);
+
+			// change the processes states
+			proc->flex_types.p.status = RUNNING;
 
 			// send it to the spawner to be executed
 			proc_index = index_proc(proc);
@@ -186,6 +189,18 @@ int main(int argc, char const *argv[]) {
 				printf("Error sending process to be executed: %s\n", strerror(errno));
 			found = 0;
 			printf("Sent to be executed\n");
+			for (i=0; i < proc->flex_types.p.n_proc-1; i++) {
+				proc = next_proc(proc);
+				proc->flex_types.p.status = RUNNING;
+
+				// send it to the spawner to be executed
+				proc_index = index_proc(proc);
+				printf("index: %d\n", proc_index);
+				if(msgsnd(idqueue, &proc_index, sizeof(int), 0) < 0)
+					printf("Error sending process to be executed: %s\n", strerror(errno));
+				found = 0;
+				printf("Sent to be executed\n");
+			}
 
 		} else {
 			// wait for a new process to be added or a free process signal
@@ -269,4 +284,3 @@ void new_submit_daemon () {
 void finalize () {
 	end = 1;
 }
-

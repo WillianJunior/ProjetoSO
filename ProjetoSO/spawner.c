@@ -103,13 +103,14 @@ int main(int argc, char const *argv[]) {
 			printf("[Wrapper] State: %d\n", state);
 			printf("[Wrapper] Program finished\n");
 			
-			// send the signal of free all_types
+			// send the signal of the process
+			// remove the process from the process table also using the mutex
+			sem_op(idsem_proc_table_mutex, 0);
+			sem_op(idsem_proc_table_mutex, 1);
+
 			printf("[Wrapper] %d process(es) freed\n", proc->flex_types.p.n_proc); // for some reason unknown this pice of come must come before the remove_proc_shr_mem otherwise ti won't be executed
 			sem_op(idsem_free_proc, proc->flex_types.p.n_proc);
 
-			// remove the process from the process table also using the mutex (NOT WORKING!!! MAYBE BECAUSE OF THE ALARM)
-			sem_op(idsem_proc_table_mutex, 0);
-			sem_op(idsem_proc_table_mutex, 1);
 			remove_proc_shr_mem(proc);
 			sem_op(idsem_proc_table_mutex, -1);
 
