@@ -44,4 +44,6 @@ int get_unique_id_proc();
 
 all_types* get_proc_by_index(int index);
 
+void remove_proc_shr_mem(all_types* proc);
+
 #endif

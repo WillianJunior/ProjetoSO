@@ -148,6 +148,7 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
     int priority_coef;
     // get the last process index already on shared memory
     int proc_index = 0;
+    int priority_list_index;
 
     // initialize process table memory manager to find out the proc_index offset
     init(PROC_TABLE_SHM_KEY);
@@ -173,8 +174,13 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
             aux->flex_types.pl.priority_coef = priority_coef;
             aux->flex_types.pl.proc_index = proc_index;
 
+            // set the control pointers for the first (and only) element
             set_first_proc(aux);
             set_last_proc(aux);
+
+            // set the process_table->priority_list index pointer
+            priority_list_index = index_proc(aux);
+
         } else if (aux->flex_types.pl.priority_coef < priority_coef) { // new first element
 
             index_aux = malloc_proc_shr_mem();
@@ -190,6 +196,9 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
             aux->prev_index = index_proc(aux);
             aux->prev = index_aux;
             set_first_proc(index_aux);
+
+            // set the process_table->priority_list index pointer
+            priority_list_index = index_proc(index_aux);
 
         } else { // not any kind of first element
             // if there is at least one item we find the right spot
@@ -211,8 +220,6 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
                 index_aux->prev = aux;
                 index_aux->prev_index = index_proc(aux);
 
-
-
                 set_last_proc(index_aux);
 
             } else {
@@ -233,9 +240,16 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
 
                 index_aux->next->prev = index_aux;
                 index_aux->next->prev_index = index_proc(index_aux);
-
             }
+
+            // set the process_table->priority_list index pointer
+            priority_list_index = index_proc(index_aux);
         }
+
+        if (index_key == COEF_LIST_1_SHM_KEY)  // THIS    IS     SHIT!!!!!!!!!!!!!!!!!
+            proc_list->flex_types.p.sjf_sch_index = priority_list_index;  // NEED TO IMPROVE FLEXIBILITY
+        else                                                             // maybe we can receive the reference to where to write as a parameter
+            proc_list->flex_types.p.ljf_sch_index = priority_list_index;
         proc_list = proc_list->next;
         proc_index++;
     }

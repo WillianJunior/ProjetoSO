@@ -75,8 +75,8 @@ int main(int argc, char const *argv[]) {
 	while (1) {
 		// if there is at least one free process it won't block
 		printf("sem = %d\n", semctl(idsem_free_proc, 0, GETVAL));
-		sem_op(idsem_free_proc, -1); // warning: can receive signal from round_table alarm NEED TO BE TREATED PROPERLY!!!!!!!!!!!
-		sem_op(idsem_free_proc, 1);// warning: can receive signal from round_table alarm NEED TO BE TREATED PROPERLY!!!!!!!!!!!
+		sem_op(idsem_free_proc, -1);
+		sem_op(idsem_free_proc, 1);
 		printf("-------------------------------------------------------\n");
 
 		// run through the process list and recover a new process
@@ -201,7 +201,7 @@ void freed_proc_daemon () {
 		printf("Freed process\n");
 		exit(0);
 	} else {
-		printf("All process are already free\n");
+		printf("There are enought process already free\n");
 		pause();
 	}
 }

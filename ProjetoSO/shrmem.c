@@ -330,3 +330,17 @@ void shm_map_reset(int index, int position) { // TODO: Convert to macro.
 all_types* get_proc_by_index(int index) {
     return (base_proc && index >= 0) ? (base_proc + index) : (all_types *) 0;
 }
+
+void remove_proc_shr_mem(all_types* proc) {
+    // free all the index lists
+    init(COEF_LIST_1_SHM_KEY);
+    free_proc_shr_mem(get_proc_by_index(proc->flex_types.p.sjf_sch_index));
+
+    init(COEF_LIST_2_SHM_KEY);
+    free_proc_shr_mem(get_proc_by_index(proc->flex_types.p.ljf_sch_index));
+        // as before, this needs to be more flexible (easier to add a new scheduler to the round table)
+
+    // finaly free the process
+    init(PROC_TABLE_SHM_KEY);
+    free_proc_shr_mem(proc);
+}

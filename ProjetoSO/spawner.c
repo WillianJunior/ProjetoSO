@@ -74,8 +74,8 @@ int main(int argc, char const *argv[]) {
 			printf("[Wrapper] Program finished\n");
 			
 			// remove the process from the process table
-			proc->flex_types.p.status = FINISHED;
-			//free_proc_shr_mem(proc);
+			//proc->flex_types.p.status = FINISHED;
+			remove_proc_shr_mem(proc);
 
 			// send the signal of free all_types
 			sem_op(idsem_free_proc, proc->flex_types.p.n_proc);
