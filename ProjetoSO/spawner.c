@@ -34,7 +34,8 @@ int main(int argc, char const *argv[]) {
 	while (1) {
 		// get the all_types request from the message queue
 		printf("[Breeder] Waiting a new all_types...\n");
-		while (msgrcv(idqueue, proc_index, sizeof(int), 0, 0) < 0)// warning: can receive signal from round_table alarm NEED TO BE TREATED PROPERLY!!!!!!!!!!!
+		// warning: can receive signal from round_table alarm, but the while treat it
+		while (msgrcv(idqueue, proc_index, sizeof(int), 0, 0) < 0)
 			if (errno != EINTR){
 				printf("[Breeder] Message Queue error: %s\n", strerror(errno));
 				exit(1);

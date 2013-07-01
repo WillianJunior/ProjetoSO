@@ -5,9 +5,9 @@ int large_quick_proc_schd (int np, int max_time) {
 }
 
 int sjf_schd (int np, int max_time) {
-	return (int) (1000*(pow(np, -2) + pow(max_time, -3)));
+	return (int) (10000*(pow(np, -2) + pow(max_time, -3)));
 }
 
 int large_slow_proc_schd (int np, int max_time) {
-	return (int) (pow(np, 2) + pow(max_time, 4));
+	return (int) (pow(np, 3) + pow(max_time, 1.4));
 }

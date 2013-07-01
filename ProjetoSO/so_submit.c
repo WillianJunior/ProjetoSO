@@ -278,6 +278,7 @@ int main(int argc, char *argv[]) {
 
     // add the processes to the index lists
     refresh_index_list(p_list, COEF_LIST_1_SHM_KEY, sjf_schd);
+    refresh_index_list(p_list, COEF_LIST_2_SHM_KEY, large_slow_proc_schd);
 
     // push the all_types read into shared memory's all_types vector
     append_proc_list(p_list);

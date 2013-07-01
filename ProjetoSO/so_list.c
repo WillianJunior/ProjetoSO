@@ -51,6 +51,8 @@ int main(int argc, char *argv[]) {
 	print_process_list();
 	printf("\n\nProcess Table ordered by SJF\n");
 	print_process_index_list(COEF_LIST_1_SHM_KEY);
+	printf("\n\nProcess Table ordered by LJF\n");
+	print_process_index_list(COEF_LIST_2_SHM_KEY);
 	//print_process_index_list();
 
 	return 0;
