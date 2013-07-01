@@ -1,4 +1,4 @@
-all: so_submit so_list spawner so_schedule
+all: so_submit so_list spawner so_schedule so_shutdown
 
 clean_ipc:
 	-ipcrm -M 0x1927
@@ -28,3 +28,6 @@ spawner: spawner.c spawner.h shrmem.c shrmem.h util.c util.h
 
 so_schedule: so_schedule.c so_schedule.h shrmem.c shrmem.h util.c util.h
 	gcc -Wall -g so_schedule.c shrmem.c util.c -o so_schedule
+
+so_shutdown: so_shutdown.c so_shutdown.h shrmem.c shrmem.h util.c util.h
+	gcc -Wall -g so_shutdown.c shrmem.c util.c -o so_shutdown
