@@ -12,6 +12,7 @@ void print_table_header() {
 
 void print_process_list() {
 	all_types* p;
+    int i, n_proc;
 
 	init(PROC_TABLE_SHM_KEY);
 
@@ -24,13 +25,17 @@ void print_process_list() {
 	print_table_header();
     while(p) {
         proc_pretty_printer(*p);
-        p = next_proc(p);
+        n_proc = p->flex_types.p.n_proc;
+        for(i=0; i<n_proc; i++) {
+            p = next_proc(p);
+        }
     }
 }
 
 void print_process_index_list(int key) {
 	all_types* index;
 	all_types* p;
+    int i, n_proc;
 
 	init(key);
 	index = get_first_proc();
@@ -42,8 +47,11 @@ void print_process_index_list(int key) {
     	init(PROC_TABLE_SHM_KEY);
         p = get_proc_by_index(index->flex_types.pl.proc_index);
         proc_pretty_printer(*p);
+        n_proc = p->flex_types.p.n_proc;
         init(key);
-        index = next_proc(index);
+        for(i=0; i<n_proc; i++) {
+            index = next_proc(index);
+        }
     }
 }
 
