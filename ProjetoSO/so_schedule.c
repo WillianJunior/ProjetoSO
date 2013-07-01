@@ -131,6 +131,7 @@ int main(int argc, char const *argv[]) {
 
 			// send it to the spawner to be executed
 			proc_index = index_proc(proc);
+			printf("index: %d\n", proc_index);
 			if(msgsnd(idqueue, &proc_index, sizeof(int), 0) < 0)
 				printf("Error sending process to be executed: %s\n", strerror(errno));
 			found = 0;

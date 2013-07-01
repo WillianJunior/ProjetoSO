@@ -25,7 +25,8 @@
 
 enum status {
 	RUNNING,
-	PENDING
+	PENDING,
+	FINISHED
 };
 
 struct process {

@@ -27,7 +27,7 @@ int main(int argc, char const *argv[]) {
 	signal(SIGALRM, zombie_killer);
 	alarm(ZOMBIE_KILLER_TIMEOUT);
 
-	init(COEF_LIST_1_SHM_KEY);
+	init(PROC_TABLE_SHM_KEY);
 
 	proc_index = malloc(sizeof(int)); // really need this!!
 
@@ -41,10 +41,11 @@ int main(int argc, char const *argv[]) {
 				exit(1);
 			}
 
+		printf("process index: %d\n", *proc_index);
 		proc = get_proc_by_index(*proc_index);
 
 		printf("[Breeder] all_types received\n");
-		proc_index_test_pretty_printer(*proc);
+		proc_pretty_printer(*proc);
 
 		// fork himself to a wrapper to set and treat the timeout
 		if ((pid = fork()) == 0) {
@@ -73,7 +74,8 @@ int main(int argc, char const *argv[]) {
 			printf("[Wrapper] Program finished\n");
 			
 			// remove the process from the process table
-			free_proc_shr_mem(proc);
+			proc->flex_types.p.status = FINISHED;
+			//free_proc_shr_mem(proc);
 
 			// send the signal of free all_types
 			sem_op(idsem_free_proc, proc->flex_types.p.n_proc);
