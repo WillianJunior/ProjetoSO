@@ -29,18 +29,21 @@ void print_process_list() {
 }
 
 void print_process_index_list(int key) {
+	all_types* index;
 	all_types* p;
 
 	init(key);
-
-	p = get_first_proc();
-	if(!p)
+	index = get_first_proc();
+	if(!index)
 		return;
 
 	print_table_header();
-    while(p) {
-        proc_index_test_pretty_printer(*p);
-        p = next_proc(p);
+    while(index) {
+    	init(PROC_TABLE_SHM_KEY);
+        p = get_proc_by_index(index->flex_types.pl.proc_index);
+        proc_pretty_printer(*p);
+        init(key);
+        index = next_proc(index);
     }
 }
 

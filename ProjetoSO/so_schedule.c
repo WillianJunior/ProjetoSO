@@ -7,7 +7,7 @@ int idsem_esc_crit;
 int idqueue;
 int least_proc;
 int pending;
-int scheduler = 0;
+int scheduler = COEF_LIST_1_SHM_KEY;
 
 int main(int argc, char const *argv[]) {
 	
@@ -18,6 +18,7 @@ int main(int argc, char const *argv[]) {
 	int old_free_count;
 	int proc_index;
 	all_types *proc;
+	all_types *indexed_proc;
 
 	// check the input parameters
 	if (argc != 2) {
@@ -57,11 +58,11 @@ int main(int argc, char const *argv[]) {
 
 	// start the scheduler changer
 	signal(SIGALRM, round_table);
-	alarm(ROUND_TABLE_TIMEOUT);
+	//alarm(ROUND_TABLE_TIMEOUT);
 	sem_op(idsem_esc_crit, 1);
 
 	// attach the shared mem for all proc_shr functions
-	init(COEF_LIST_1_SHM_KEY);
+	init(scheduler);
 
 	// set the number of free processes
 	sem_op(idsem_free_proc, atoi(argv[1]));
@@ -89,24 +90,32 @@ int main(int argc, char const *argv[]) {
 		old_free_count = semctl(idsem_free_proc, 0, GETVAL);
 
 		// try to find out a executable process
-		if ((proc = get_first_proc()) != 0) {
+		init(scheduler);
+		if ((indexed_proc = get_first_proc()) != 0) {
 			do {
-				if (proc->flex_proc.pl.testp.n_proc < least_proc && proc->flex_proc.pl.testp.status == PENDING)
-					least_proc = proc->flex_proc.pl.testp.n_proc;
-				// search
-				if (proc->flex_proc.pl.testp.status == PENDING) {
+				// get the process referenced by the indexed table
+				init(PROC_TABLE_SHM_KEY);
+				proc = get_proc_by_index(indexed_proc->flex_types.pl.proc_index);
+
+				// set the minimum number of free process needed to run at least 
+				if (proc->flex_types.p.n_proc < least_proc && proc->flex_types.p.status == PENDING)
+					least_proc = proc->flex_types.p.n_proc;
+				
+				// check if 
+				if (proc->flex_types.p.status == PENDING) {
 					pending = 1;
 					// racing condition: a process can be freed while running throught the list: treated with old_free_count
-					if (proc->flex_proc.pl.testp.n_proc <= semctl(idsem_free_proc, 0, GETVAL)) {
+					if (proc->flex_types.p.n_proc <= semctl(idsem_free_proc, 0, GETVAL)) {
 						// change the process state
-						proc->flex_proc.pl.testp.status = RUNNING;
+						proc->flex_types.p.status = RUNNING;
 						printf("Found!!!\n");
-						proc_index_test_pretty_printer(*proc);
+						proc_pretty_printer(*proc);
 						found = 1;
 						break;
 					}
 				}
-			} while((proc = next_proc(proc)) != 0);
+				init(scheduler);
+			} while((indexed_proc = next_proc(indexed_proc)) != 0);
 		} else
 			printf("There isn't any process\n");
 
@@ -118,7 +127,7 @@ int main(int argc, char const *argv[]) {
 			sem_op(idsem_esc_count, 1);	
 
 			// alocate the processes
-			sem_op(idsem_free_proc, -proc->flex_proc.pl.testp.n_proc);
+			sem_op(idsem_free_proc, -proc->flex_types.p.n_proc);
 
 			// send it to the spawner to be executed
 			proc_index = index_proc(proc);
@@ -174,13 +183,11 @@ void round_table () {
 	
 	printf("[Round Table] Ok, time to change\n");
 	// change the actual scheduler, only works for 2 scheduleres, for now
-	if (scheduler) {
-		scheduler = 0;
-		init(COEF_LIST_1_SHM_KEY);
-	} else {
-		scheduler = 1;
-		init(COEF_LIST_2_SHM_KEY);
-	}
+	if (scheduler == COEF_LIST_2_SHM_KEY)
+		scheduler = COEF_LIST_1_SHM_KEY;
+	else
+		scheduler = COEF_LIST_2_SHM_KEY;
+
 	sem_reset (idsem_esc_count);
 	alarm(ROUND_TABLE_TIMEOUT);
 }

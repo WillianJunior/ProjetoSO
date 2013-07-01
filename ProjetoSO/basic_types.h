@@ -25,26 +25,10 @@
 
 enum status {
 	RUNNING,
-	PENDING,
-	FINISHED
+	PENDING
 };
 
 struct process {
-	char exec_name[PROC_EXEC_NAME_SIZE];
-	char exec_path[PROC_EXEC_PATH_SIZE];
-	unsigned long max_time;
-	unsigned int n_proc;
-	char argv[PROC_ARGV_SIZE];
-	float priority_coef;
-	enum status status;
-	int prev_index;
-	int next_index;
-	int n_req;
-	struct process* prev;
-	struct process* next;
-};
-
-struct flex_process {
 	char exec_name[PROC_EXEC_NAME_SIZE];
 	char exec_path[PROC_EXEC_PATH_SIZE];
 	unsigned long max_time;
@@ -61,14 +45,13 @@ struct flex_process {
 struct priority_list {
 	int proc_index;
 	int priority_coef;
-	struct flex_process testp;
 };
 
 struct all_types {
-	union flex_proc {
-		struct flex_process p;
+	union flex_types {
+		struct process p;
 		struct priority_list pl;
-	} flex_proc;
+	} flex_types;
 	int prev_index;
 	int next_index;
 	struct all_types* prev;
@@ -76,7 +59,6 @@ struct all_types {
 };
 
 typedef struct process process;
-typedef struct flex_process flex_process;
 typedef struct priority_list priority_list;
 typedef struct all_types all_types;
 

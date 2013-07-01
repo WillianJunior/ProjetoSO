@@ -54,16 +54,16 @@ int main(int argc, char const *argv[]) {
 			if ((pid = fork()) == 0) {
 				// execute the all_types from the fork of the wrapper
 				printf("[Executer] Now will execute the new program\n");
-				execl(proc->flex_proc.pl.testp.exec_path, proc->flex_proc.pl.testp.exec_name, proc->flex_proc.pl.testp.argv, (char *) 0);
+				execl(proc->flex_types.p.exec_path, proc->flex_types.p.exec_name, proc->flex_types.p.argv, (char *) 0);
 			}
 
 			// set timeout
 			printf("[Wrapper] Setting timeout alarm\n");
 			signal(SIGALRM, proc_killer);
-			alarm(proc->flex_proc.pl.testp.max_time);
+			alarm(proc->flex_types.p.max_time);
 
 			// set the initial time of execution
-			proc->flex_proc.pl.testp.start_sec = time(NULL);
+			proc->flex_types.p.start_sec = time(NULL);
 
 			// wait for the process to finish
 			printf("[Wrapper] Waiting for the program to finish...\n");
@@ -76,7 +76,7 @@ int main(int argc, char const *argv[]) {
 			free_proc_shr_mem(proc);
 
 			// send the signal of free all_types
-			sem_op(idsem_free_proc, proc->flex_proc.pl.testp.n_proc);
+			sem_op(idsem_free_proc, proc->flex_types.p.n_proc);
 
 			return state;
 		}
