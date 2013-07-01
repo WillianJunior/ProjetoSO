@@ -89,10 +89,11 @@ void proc_index_test_pretty_printer(struct all_types proc) {
 int sem_op (int idsem, int n) {
 	int returnv;
 
-	sem_op_s.sem_num = 0;
-	sem_op_s.sem_op = n;
-	sem_op_s.sem_flg = 0;
-	while ((returnv = semop(idsem, &sem_op_s, 1)) < 0)
+	sem_op_s1.sem_num = 0;
+	sem_op_s1.sem_op = n;
+	sem_op_s1.sem_flg = 0;
+	// what if quantum happens here? and if it came after the round table alert that executed sem_reset
+	while ((returnv = semop(idsem, &sem_op_s1, 1)) < 0)
 		if (errno != EINTR){
 			printf("Semaphore error: %s\n", strerror(errno));
 			exit(1);
@@ -101,10 +102,10 @@ int sem_op (int idsem, int n) {
 }
 
 int sem_op_nblock (int idsem, int n) {
-	sem_op_s.sem_num = 0;
-	sem_op_s.sem_op = n;
-	sem_op_s.sem_flg = IPC_NOWAIT;
-	return semop(idsem, &sem_op_s, 1);
+	sem_op_s2.sem_num = 0;
+	sem_op_s2.sem_op = n;
+	sem_op_s2.sem_flg = IPC_NOWAIT;
+	return semop(idsem, &sem_op_s2, 1);
 }
 
 void sem_reset (int idsem) {

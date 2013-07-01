@@ -6,16 +6,17 @@ int idsem_esc_count;
 int idsem_esc_crit;
 int idqueue;
 int least_proc;
+int most_proc;
 int pending;
 int scheduler = COEF_LIST_1_SHM_KEY;
 
 int main(int argc, char const *argv[]) {
 	
+	int idsem_proc_table_mutex;
 	int status;
 	int pid_fp;
 	int pid_np;
 	int found = 0;
-	int old_free_count;
 	int proc_index;
 	all_types *proc;
 	all_types *indexed_proc;
@@ -50,6 +51,12 @@ int main(int argc, char const *argv[]) {
 		exit(1);
 	}
 
+	// start the mutex to provide only one read/write access
+    if ((idsem_proc_table_mutex = semget(PROC_TABLE_MUTEX_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
+        printf("Error obtaining the semaphore: %s\n", strerror(errno)); 
+        exit(1);
+    }
+
 	// access the msg queue from the spawner
 	if ((idqueue = msgget(SCH_SPW_MSGQ_KEY, IPC_CREAT|0x1FF)) < 0) {
 		printf( "Error obtaining the msg queue: %s\n", strerror(errno));
@@ -58,7 +65,7 @@ int main(int argc, char const *argv[]) {
 
 	// start the scheduler changer
 	signal(SIGALRM, round_table);
-	//alarm(ROUND_TABLE_TIMEOUT);
+	alarm(ROUND_TABLE_TIMEOUT);
 	sem_op(idsem_esc_crit, 1);
 
 	// attach the shared mem for all proc_shr functions
@@ -82,13 +89,16 @@ int main(int argc, char const *argv[]) {
 		// run through the process list and recover a new process
 		printf("Searching for a process...\n");
 		least_proc = 100000; // large num
+		most_proc = 0;
 		pending = 0;
 		// semaphore to make sure that when the scheduler start to seek a proc it doesn't change to other scheduler list
 		sem_op(idsem_esc_crit, -1);
-		
-		// var to make sure that no process have been freed while we run through the process list
-		old_free_count = semctl(idsem_free_proc, 0, GETVAL);
 
+		// ... nor change the process list itself
+		//sem_op(idsem_proc_table_mutex, 0);
+		//sem_op(idsem_proc_table_mutex, 1);
+		//printf("lock\n");
+		
 		// try to find out a executable process
 		init(scheduler);
 		if ((indexed_proc = get_first_proc()) != 0) {
@@ -100,6 +110,8 @@ int main(int argc, char const *argv[]) {
 				// set the minimum number of free process needed to run at least 
 				if (proc->flex_types.p.n_proc < least_proc && proc->flex_types.p.status == PENDING)
 					least_proc = proc->flex_types.p.n_proc;
+				if (proc->flex_types.p.n_proc > most_proc && proc->flex_types.p.status == PENDING)
+					most_proc = proc->flex_types.p.n_proc;
 				
 				// check if 
 				if (proc->flex_types.p.status == PENDING) {
@@ -122,6 +134,10 @@ int main(int argc, char const *argv[]) {
 		// unlock the round_table to change the scheduler in use
 		sem_op(idsem_esc_crit, 1);
 
+		// ... and also unlock the process table
+		//sem_op(idsem_proc_table_mutex, -1);
+		//printf("unlock\n");
+
 		if (found) {
 			// increment the scheduler runned process counter
 			sem_op(idsem_esc_count, 1);	
@@ -138,34 +154,31 @@ int main(int argc, char const *argv[]) {
 			printf("Sent to be executed\n");
 
 		} else {
-			// if the process list have been searched and the number of free process is still the same
-			if (semctl(idsem_free_proc, 0, GETVAL) == old_free_count) {
-				// wait for a new process to be added or a free process signal
-				// create the freed process daemon
-				if ((pid_fp = fork()) == 0)
-					pause();
-				
-				// create the new submit daemon
-				if ((pid_np = fork()) == 0)
-					pause();
+			// wait for a new process to be added or a free process signal
+			// create the freed process daemon
+			if ((pid_fp = fork()) == 0)
+				pause();
+			
+			// create the new submit daemon
+			if ((pid_np = fork()) == 0)
+				pause();
 
-				// start the daemons
-				printf("Starting free_process and new_submit listeners\n");
-				kill(pid_fp, SIGUSR1);
-				kill(pid_np, SIGUSR2);
+			// start the daemons
+			printf("Starting free_process and new_submit listeners\n");
+			kill(pid_fp, SIGUSR1);
+			kill(pid_np, SIGUSR2);
 
-				// wait for the first daemon to return
-				wait(&status);
+			// wait for the first daemon to return
+			wait(&status);
 
-				// kill and wait the other daemon
-				if (status)
-					kill(pid_fp, SIGKILL);
-				else
-					kill(pid_np, SIGKILL);
+			// kill and wait the other daemon
+			if (status)
+				kill(pid_fp, SIGKILL);
+			else
+				kill(pid_np, SIGKILL);
 
-				// wait for the killed daemon
-				wait(&status);
-			}
+			// wait for the killed daemon
+			wait(&status);
 		}
 	}
 
@@ -196,8 +209,13 @@ void round_table () {
 void freed_proc_daemon () {
 
 	if (pending) {
-		sem_op(idsem_free_proc, -least_proc);
-		sem_op(idsem_free_proc, least_proc);
+		if (scheduler == COEF_LIST_1_SHM_KEY) {
+			sem_op(idsem_free_proc, -least_proc);
+			sem_op(idsem_free_proc, least_proc);
+		} else {
+			sem_op(idsem_free_proc, -most_proc);
+			sem_op(idsem_free_proc, most_proc);
+		}
 		printf("Freed process\n");
 		exit(0);
 	} else {

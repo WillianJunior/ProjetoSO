@@ -264,6 +264,7 @@ int main(int argc, char *argv[]) {
     const char* filename;
 
     int idsem_sch_submit;
+    int idsem_proc_table_mutex;
 
     if(argc < 2) {
         fprintf(stderr, "Usage: so_submit <all_types file>.\n");
@@ -272,6 +273,12 @@ int main(int argc, char *argv[]) {
 
     // get a communication channel between the scheduler and so_submit using a semaphore
     if ((idsem_sch_submit = semget(SCH_SBMT_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
+        printf("Error obtaining the semaphore: %s\n", strerror(errno)); 
+        exit(1);
+    }
+
+    // start the mutex to provide only one read/write access
+    if ((idsem_proc_table_mutex = semget(PROC_TABLE_MUTEX_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
         printf("Error obtaining the semaphore: %s\n", strerror(errno)); 
         exit(1);
     }
@@ -287,12 +294,19 @@ int main(int argc, char *argv[]) {
     parse_process_list(&p_list, SHM_BASE_PROC_NUMBER, fp);
     fclose(fp);
 
+    // get the process table access
+    //sem_op(idsem_proc_table_mutex, 0);
+    //sem_op(idsem_proc_table_mutex, 1);
+
     // add the processes to the index lists
     refresh_index_list(p_list, COEF_LIST_1_SHM_KEY, sjf_schd);
     refresh_index_list(p_list, COEF_LIST_2_SHM_KEY, large_slow_proc_schd);
 
     // push the all_types read into shared memory's all_types vector
     append_proc_list(p_list);
+
+    // release the process table
+    //sem_op(idsem_proc_table_mutex, -1);
 
     // send a signal to the scheduler
     sem_op_nblock(idsem_sch_submit, -1);

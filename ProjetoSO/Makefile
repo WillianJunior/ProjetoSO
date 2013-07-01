@@ -11,6 +11,7 @@ clean_ipc:
 	-ipcrm -S 0x1928
 	-ipcrm -S 0x1929
 	-ipcrm -S 0x192a
+	-ipcrm -S 0x192b
 	-ipcrm -Q 0x1927
 
 clean: clean_ipc

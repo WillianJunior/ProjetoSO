@@ -5,6 +5,7 @@ int pid;
 int main(int argc, char const *argv[]) {
 	
 	int idsem_free_proc;
+	int idsem_proc_table_mutex;
 	int idqueue;
 	int state;
 	int *proc_index;
@@ -17,6 +18,12 @@ int main(int argc, char const *argv[]) {
 		exit(1);
 	}
 
+	// start the mutex to provide only one read/write access
+    if ((idsem_proc_table_mutex = semget(PROC_TABLE_MUTEX_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
+        printf("Error obtaining the semaphore: %s\n", strerror(errno)); 
+        exit(1);
+    }
+
 	// access the msg queue from the spawner
 	if ((idqueue = msgget(SCH_SPW_MSGQ_KEY, IPC_CREAT|0x1FF)) < 0) {
 		printf( "erro na obtencao da fila\n" );
@@ -27,6 +34,8 @@ int main(int argc, char const *argv[]) {
 	signal(SIGALRM, zombie_killer);
 	alarm(ZOMBIE_KILLER_TIMEOUT);
 
+	// do not need to be initialize more than this time because
+	// it will only be used for the breeder process
 	init(PROC_TABLE_SHM_KEY);
 
 	proc_index = malloc(sizeof(int)); // really need this!!
@@ -63,8 +72,11 @@ int main(int argc, char const *argv[]) {
 			signal(SIGALRM, proc_killer);
 			alarm(proc->flex_types.p.max_time);
 
-			// set the initial time of execution
+			// set the initial time of execution using the mutex (NOT WORKING!!! MAYBE BECAUSE OF THE ALARM)
+			//sem_op(idsem_proc_table_mutex, 0);
+			//sem_op(idsem_proc_table_mutex, 1);
 			proc->flex_types.p.start_sec = time(NULL);
+			//sem_op(idsem_proc_table_mutex, -1);
 
 			// wait for the process to finish
 			printf("[Wrapper] Waiting for the program to finish...\n");
@@ -73,12 +85,16 @@ int main(int argc, char const *argv[]) {
 			printf("[Wrapper] State: %d\n", state);
 			printf("[Wrapper] Program finished\n");
 			
-			// remove the process from the process table
-			//proc->flex_types.p.status = FINISHED;
-			remove_proc_shr_mem(proc);
-
 			// send the signal of free all_types
+			printf("[Wrapper] %d process(es) freed\n", proc->flex_types.p.n_proc); // for some reason unknown this pice of come must come before the remove_proc_shr_mem otherwise ti won't be executed
 			sem_op(idsem_free_proc, proc->flex_types.p.n_proc);
+
+			// remove the process from the process table also using the mutex (NOT WORKING!!! MAYBE BECAUSE OF THE ALARM)
+			//sem_op(idsem_proc_table_mutex, 0);
+			//sem_op(idsem_proc_table_mutex, 1);
+			remove_proc_shr_mem(proc);
+			//sem_op(idsem_proc_table_mutex, -1);
+
 
 			return state;
 		}

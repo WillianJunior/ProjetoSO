@@ -16,6 +16,7 @@
 #define SCH_SBMT_SEM_KEY 0x1928
 #define ADPT_ESC_COUNT_SEM_KEY 0x1929
 #define ADPT_ESC_CRIT_SEM_KEY 0x192A
+#define PROC_TABLE_MUTEX_SEM_KEY 0x192B
 
 #define PROC_TABLE_SHM_KEY 0x1927
 #define COEF_LIST_1_SHM_KEY 0x1929
@@ -25,8 +26,7 @@
 
 enum status {
 	RUNNING,
-	PENDING,
-	FINISHED
+	PENDING
 };
 
 struct process {
@@ -63,6 +63,7 @@ typedef struct process process;
 typedef struct priority_list priority_list;
 typedef struct all_types all_types;
 
-struct sembuf sem_op_s;
+struct sembuf sem_op_s1;
+struct sembuf sem_op_s2;
 
 #endif
