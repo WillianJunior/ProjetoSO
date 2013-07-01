@@ -19,7 +19,7 @@ int main(int argc, char const *argv[]) {
 	int idsem_proc_table_mutex;
 	int idqueue_shutdown;
 
-	int *my_pid = malloc(sizeof(int));
+	int my_pid;
 
 	int status;
 	int pid_fp;
@@ -81,13 +81,15 @@ int main(int argc, char const *argv[]) {
 	}
 
 	// send the pid to the so_shutdown process only AFTER the spawner
-	msgrcv(idqueue_shutdown, my_pid, sizeof(int), 0, 0);
-	msgsnd(idqueue_shutdown, my_pid, sizeof(int), 0);
-	*my_pid = getpid();
-	msgsnd(idqueue_shutdown, my_pid, sizeof(int), 0);
+	msgrcv(idqueue_shutdown, &my_pid, sizeof(int), 0, 0);
+	printf("other pid: %d\n", my_pid);
+	msgsnd(idqueue_shutdown, &my_pid, sizeof(int), 0);
+	my_pid = getpid();
+	printf("pid: %d\n", my_pid);
+	msgsnd(idqueue_shutdown, &my_pid, sizeof(int), 0);
 	// also, send the proc number
-	*my_pid = atoi(argv[1]);
-	msgsnd(idqueue_shutdown, my_pid, sizeof(int), 0);
+	my_pid = atoi(argv[1]);
+	msgsnd(idqueue_shutdown, &my_pid, sizeof(int), 0);
 
 	// start the scheduler changer
 	signal(SIGALRM, round_table);
@@ -282,5 +284,6 @@ void new_submit_daemon () {
 }
 
 void finalize () {
+	printf("Finalize signal\n");
 	end = 1;
 }

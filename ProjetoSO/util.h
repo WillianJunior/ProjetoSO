@@ -27,4 +27,6 @@ int sem_op_nblock (int idsem, int n);
 // reset the semaphore to zero
 void sem_reset (int idsem);
 
+int sem_kill (int idsem);
+
 #endif

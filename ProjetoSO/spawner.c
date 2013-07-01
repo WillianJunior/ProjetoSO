@@ -10,10 +10,9 @@ int main(int argc, char const *argv[]) {
 	int idqueue;
     int idqueue_shutdown;
 	int state;
-    int *my_pid = malloc(sizeof(int));
+    int my_pid;
 	int *proc_index;
 	all_types *proc;
-	//all_types *proc_temp;
 
 	// start the semaphore
 	if ((idsem_free_proc = semget(FREE_PROC_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
@@ -40,8 +39,9 @@ int main(int argc, char const *argv[]) {
 	}
 
 	// send the pid to the so_shutdown process
-	*my_pid = getpid();
-	msgsnd(idqueue_shutdown, my_pid, sizeof(int), 0);
+	my_pid = getpid();
+	msgsnd(idqueue_shutdown, &my_pid, sizeof(int), 0);
+	signal(SIGTERM, finalize);
 
 	// create the zombie killer 
 	signal(SIGALRM, zombie_killer);
@@ -142,6 +142,6 @@ void proc_killer () {
 }
 
 void finalize () {
-
+	end = 1;
 }
 

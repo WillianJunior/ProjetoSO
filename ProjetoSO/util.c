@@ -80,7 +80,6 @@ int sem_op_sens (int idsem, int n) {
 	sem_op_s2.sem_num = 0;
 	sem_op_s2.sem_op = n;
 	sem_op_s2.sem_flg = 0;
-	// what if quantum happens here? and if it came after the round table alert that executed sem_reset
 	return semop(idsem, &sem_op_s2, 1);
 }
 
@@ -93,4 +92,8 @@ int sem_op_nblock (int idsem, int n) {
 
 void sem_reset (int idsem) {
 	while (sem_op_nblock(idsem, -1) >= 0);
+}
+
+int sem_kill (int idsem) {
+	return semctl(idsem, 0, IPC_RMID);
 }

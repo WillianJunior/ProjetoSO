@@ -5,9 +5,9 @@ int main () {
 	int idqueue_shutdown;
 	int idsem_free_proc;
 
-	int *spawner_pid = malloc(sizeof(int));
-	int *scheduler_pid = malloc(sizeof(int));
-	int *nproc = malloc(sizeof(int));
+	int spawner_pid;
+	int scheduler_pid;
+	int nproc;
 
 	if ((idqueue_shutdown = msgget(SHTDWN_PIDS_MSGQ_KEY, IPC_CREAT|0x1FF)) < 0) {
 		printf( "erro na obtencao da fila\n" );
@@ -21,28 +21,32 @@ int main () {
 	}
 
 	// stop the scheduler from spawning more processes and the spawner from running more processes from its queue (SIGTERM)
-	msgrcv(idqueue_shutdown, spawner_pid, sizeof(int), 0, 0);
-	kill(*spawner_pid, SIGTERM);
-	msgrcv(idqueue_shutdown, scheduler_pid, sizeof(int), 0, 0);
-	kill(*scheduler_pid, SIGTERM);
+	msgrcv(idqueue_shutdown, &spawner_pid, sizeof(int), 0, 0);
+	kill(spawner_pid, SIGTERM);
+	msgrcv(idqueue_shutdown, &scheduler_pid, sizeof(int), 0, 0);
+	kill(scheduler_pid, SIGTERM);
 
 	// begin countdown to force finish
 	alarm(SHUTDOWN_TIMEOUT);
 	signal(SIGALRM, hard_shutdown);
 
 	// wait for the semaphore of process. if all processes are free then all processes have stoped
-	msgrcv(idqueue_shutdown, nproc, sizeof(int), 0, 0);
-	sem_op_sens(idsem_free_proc, -(*nproc));
+	msgrcv(idqueue_shutdown, &nproc, sizeof(int), 0, 0);
+	sem_op_sens(idsem_free_proc, -nproc);
 
 	
 	// disarm the alarm
 	printf("That was close!! %d seconds left to a forced shutdown\n", alarm(0));
-	
-	// if not send SIGKILL to every live process
 
 	// kill the spawner and the scheduler
-	kill(*spawner_pid, SIGKILL);
-	kill(*scheduler_pid, SIGKILL);
+
+	sem_kill(FREE_PROC_SEM_KEY);
+	sem_kill(SCH_SBMT_SEM_KEY);
+	sem_kill(ADPT_ESC_COUNT_SEM_KEY);
+	sem_kill(ADPT_ESC_CRIT_SEM_KEY);
+	sem_kill(PROC_TABLE_MUTEX_SEM_KEY);
+	kill(spawner_pid, SIGKILL);
+	kill(scheduler_pid, SIGKILL);
 
 	// finaly kill itself
 	return 0;
