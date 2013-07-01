@@ -5,19 +5,28 @@ int idsem_sch_submit;
 int idsem_esc_count;
 int idsem_esc_crit;
 int idqueue;
+
 int least_proc;
 int most_proc;
 int pending;
+
+int end = 0;
+
 int scheduler = COEF_LIST_1_SHM_KEY;
 
 int main(int argc, char const *argv[]) {
 	
 	int idsem_proc_table_mutex;
+	int idqueue_shutdown;
+
+	int *my_pid = malloc(sizeof(int));
+
 	int status;
 	int pid_fp;
 	int pid_np;
 	int found = 0;
 	int proc_index;
+
 	all_types *proc;
 	all_types *indexed_proc;
 
@@ -63,6 +72,21 @@ int main(int argc, char const *argv[]) {
 		exit(1);
 	}
 
+	// access the msg queue to send the pid to so_shutdown
+	if ((idqueue_shutdown = msgget(SHTDWN_PIDS_MSGQ_KEY, IPC_CREAT|0x1FF)) < 0) {
+		printf( "erro na obtencao da fila\n" );
+		exit(1);
+	}
+
+	// send the pid to the so_shutdown process only AFTER the spawner
+	msgrcv(idqueue_shutdown, my_pid, sizeof(int), 0, 0);
+	msgsnd(idqueue_shutdown, my_pid, sizeof(int), 0);
+	*my_pid = getpid();
+	msgsnd(idqueue_shutdown, my_pid, sizeof(int), 0);
+	// also, send the proc number
+	*my_pid = atoi(argv[1]);
+	msgsnd(idqueue_shutdown, my_pid, sizeof(int), 0);
+
 	// start the scheduler changer
 	signal(SIGALRM, round_table);
 	alarm(ROUND_TABLE_TIMEOUT);
@@ -74,12 +98,17 @@ int main(int argc, char const *argv[]) {
 	// set the number of free processes
 	sem_op(idsem_free_proc, atoi(argv[1]));
 
-	// set the daemons waiters
+	// set the waiters
 	signal(SIGUSR1, freed_proc_daemon);
 	signal(SIGUSR2, new_submit_daemon);
-	//signal(SIGTERM, finalize);
+	signal(SIGTERM, finalize);
 
 	while (1) {
+		// if the scheduler has received a SIGTERM it will become blocked until the SIGKILL
+		if (end)
+			while(1)
+				pause();
+
 		// if there is at least one free process it won't block
 		printf("sem = %d\n", semctl(idsem_free_proc, 0, GETVAL));
 		sem_op(idsem_free_proc, -1);
@@ -137,6 +166,11 @@ int main(int argc, char const *argv[]) {
 		// ... and also unlock the process table
 		//sem_op(idsem_proc_table_mutex, -1);
 		//printf("unlock\n");
+
+		// if the scheduler has received a SIGTERM it will become blocked until the SIGKILL
+		if (end)
+			while(1)
+				pause();
 
 		if (found) {
 			// increment the scheduler runned process counter
@@ -230,4 +264,8 @@ void new_submit_daemon () {
 	sem_op(idsem_sch_submit, 0);
 	printf("New submit\n");
 	exit(1);
+}
+
+void finalize () {
+	end = 1;
 }

@@ -25,6 +25,7 @@
 #define COEF_LIST_2_SHM_KEY 0x192B
 
 #define SCH_SPW_MSGQ_KEY 0x1927
+#define SHTDWN_PIDS_MSGQ_KEY 0x1928
 
 enum status {
 	RUNNING,

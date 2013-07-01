@@ -26,4 +26,6 @@ void zombie_killer();
 
 void proc_killer ();
 
+void finalize ();
+
 #endif
