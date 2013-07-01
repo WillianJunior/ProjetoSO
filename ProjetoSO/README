@@ -1,33 +1,49 @@
-Tabalho de Sistemas Operacionais
-Alexandre Lucchesi	-	m. 09/0104471
-Willian Junior		-	m. 09/0135806
+/**
+ * Universidade de Brasília - UnB
+ * Alunos: Alexandre Lucchesi Alencar - 09/0104471
+ *         Willian Júnior - 09/0135806
+ *
+ * Sistemas Operacionais - Profa. Alba Melo
+ *
+ * Trabalho 1
+ *
+ * This code can be download in: https://github.com/WillianJunior/ProjetoSO.git
+ *
+ */
 
 Arquivos:
-basic_types.h
-helloworld.c
-Makefile
-process_pi.txt
-schedulers.c
-schedulers.h
-shrmem.c
-shrmem.h
-so_list.c
-so_list.h
-so_schedule.c
-so_schedule.h
-so_shutdown.c
-so_shutdown.h
-so_submit.c
-so_submit.h
-spawner.c
-spawner.h
-util.c
-util.h
 
-Uso:
-	Este projeto foi feito para ser um Meta-Servidor Escalonador Não-Preemptivo Adaptativo. O uso deste Escalonador consiste em submeter arquivos executaveis via so_submit, inicializar o gerenciador de criação de processos, spawner, iniciar o escalonamento de processos pelo so_schedule, observar o andamento dos processos com o so_list e encerrar tudo com o so_shutdown.
+- Makefile
+- 
+- helloworld.c (exemplo)
+- fibonacci.c  (exemplo)
 
-Estruturas Basicas:
+- process_pi.txt (lista de programas; input para so_submit)
+
+- basic_types.h
+- schedulers.c
+- schedulers.h
+- shrmem.c
+- shrmem.h
+- so_list.c
+- so_list.h
+- so_schedule.c
+- so_schedule.h
+- so_shutdown.c
+- so_shutdown.h
+- so_submit.c
+- so_submit.h
+- spawner.c
+- spawner.h
+- util.c
+- util.h
+
+
+Utilização:
+
+	Este projeto foi feito para ser um Meta-Servidor Escalonador Não-Preemptivo Adaptativo. O uso deste escalonador consiste em submeter arquivos executáveis através do programa 'so_submit'; inicializar o gerenciador de criação de processos: 'spawner'; iniciar o escalonamento de processos pelo 'so_schedule'; visualizar os processos com o 'so_list'; e, por fim, encerrar tudo com o 'so_shutdown'.
+
+Estruturas Básicas:
 	
 	enum status {
 		RUNNING,
@@ -66,25 +82,27 @@ Estruturas Basicas:
 	};
 
 
-Estrategia de Escalonamento:
-	Para garantir o menor turnaround possivel, excluindo a possibilidade de starvation e tentando deixar o escalonador o mais rapido possivel foi utilizada uma estrategia de escalonamento adaptativo. 
-	A estrategia é: dado que um escalonador que possua as qualidades acima é de grande dificuldade de desenvolvimento e implementação, usaremos varios escalonadores simples, que quando juntos apresentam a possibilidade de escolhas otimas de ordenação de processos. 
-	Para simplificar foram escolhidos apenas dois escaonadores simples: um Shortest Job First (SJF) e uma especie de Hardest Job First (HJF), que dá como prioridade processos mais demorados e que exigem mais processos para executar.
-	Por traz desses escalonadores teremos um algoritmo que trocará os escalonadores de tempo em tempo para garantir que haja justica na alocação de recursos. A implementação apresentada usa um essquema simples de troca de escalonadores em intervalos de tempo constantes (exeto casos especificos que serão discutidos doravante), que possibilitará tanto a execução de processos rapidos (SJF) como não deixará ocorrer starvation.
-	Para otimizar o acesso e diminuir o tempo que o escalonador estará executando efetivamente foi implementada uma pequena biblioteca de funções para uso da memoria compartilhada do sistema Linux. Esta biblioteca é usada para representar tres tabelas: Tabela de Processos, Tabela de Indexação SJF e Tabela de indexação HJF. As tabelas de indexação servem como filas para cada escalonador simples. A grande vantagem de usar tabela indexadas é a não necessidade de re-ordenação já que todos elementos serão indexados na inserção. 
-	Podemos ver as Estruturas Basicas que fazem parte do algoritmo. 
+Estratégia de Escalonamento:
 
-	Para o gerenciamento de memoria usamos a struct all_types que possui variaveis que controles, que são uteis apenas para o gerenciamento de memoria. Como campos de dados de all_types podemos ter os campos de uma lista indexada ou de um processo, possibilitando tambem a inserção de novos escalonadores.
+	Para garantir o menor 'turnaround' possível, excluindo a possibilidade de 'starvation' e tentando deixar o escalonador o mais rápido possivel foi utilizada uma estratégia de escalonamento adaptativo. 
+	A estratégia é: dado que um escalonador que possua as qualidades acima é de grande dificuldade de desenvolvimento e implementação, usaremos vários escalonadores simples, que quando juntos apresentam a possibilidade de escolhas ótimas de ordenação de processos. 
+	Para simplificar foram escolhidos apenas dois escalonadores simples: um Shortest Job First (SJF) e uma espécie de Hardest Job First (HJF), que dá maior prioridade a processos mais demorados e que contêm mais processos para executar.
+	Por trás desses escalonadores teremos um algoritmo que trocará os escalonadores periodicamente para garantir que haja justiça na alocação de recursos. A implementação apresentada usa um esquema simples de troca de escalonadores em intervalos de tempo constantes (exceto casos específicos que serão discutidos doravante), que possibilitará tanto a execução de processos rápidos (SJF) como não deixará ocorrer starvation.
+	Para otimizar o acesso e diminuir o tempo que o escalonador estará executando efetivamente foi implementada uma pequena biblioteca de funções para gerenciamento da memória compartilhada do sistema Linux. Esta biblioteca é usada para representar três tabelas: Tabela de Processos, Tabela de Indexação SJF e Tabela de indexação HJF. As tabelas de indexação servem como filas para cada escalonador simples. A grande vantagem de usar tabelas indexadas é a não necessidade de reordenação, já que todos os elementos serão indexados na inserção. 
+	Podemos ver as Estruturas Básicas que fazem parte do algoritmo. 
 
-	A struct all_types está organazada na memoria como um vetor de tamanho fixo e encadeamento bilateral, possibilitando assim uma maior rapidez na inserção, acesso e remoção de elementos. Para acompanhar a memoria e gerenciar os espaço foi utilizado um mapa de bits onde cada bit representa um elemento allocado. Todas as funcionalidades de consistencia memoria são transparentes ao usuario.
+	Para o gerenciamento de memória usamos a 'struct all_types', que possui variáveis de controle que são úteis apenas para o gerenciamento de memoria. Como campos de dados de all_types podemos ter os campos de uma lista indexada ou de um processo, possibilitando também a inserção de novos escalonadores.
 
-	Para executar os processos foi pensado em um pequeno servidor que recebe requisições (struct all_types) e cria novos processos no sistema operacional para cada processo (spawner). O nosso chamado Spawner possue tres niveis de processos: O Breader tem como unico objetivo carregar uma requisição e criar um Wrapper para rodar o processo. O Wrapper tem como função encapsular um executavel com o comportamento de timeout (encerramento forçado apos um certo tempo) e criar um terceiro processo via fork para finalmente executar o processo. O Executer é quem executará efetivamente o processo. Já que o Executer invocará um execl, ele não pode ser responsavel por cuidar de mais nada. Para o Breader não ter que ficar esperando os seus Wrappers, bloqueado, um Zombie Killer é chamado periodicamente para matar todos os Wrappers zombies.
+	A struct all_types está organizada na memória como um vetor de tamanho fixo e encadeamento bilateral, possibilitando assim uma maior rapidez na inserção, acesso e remoção de elementos. Para acompanhar a memória e gerenciar o espaço foi utilizado um mapa de bits onde cada bit representa um elemento alocado. Todas as funcionalidades de consistência de memória são transparentes ao usuário.
+
+	Para executar os processos foi pensado um pequeno servidor que recebe requisições (struct all_types) e cria novos processos no sistema operacional para cada processo (spawner). O nosso chamado Spawner possui três níveis de processos: O Breader tem como único objetivo carregar uma requisição e criar um Wrapper para rodar o processo. O Wrapper tem como função encapsular um executável com o comportamento de timeout (encerramento forçado apos um certo tempo) e criar um terceiro processo via fork para finalmente executar o processo. O Executer é quem executará efetivamente o processo. Já que o Executer invocará um execl, ele não pode ser responsável por cuidar de mais nada. Para o Breader não ter que ficar esperando os seus Wrappers, bloqueado, um Zombie Killer é chamado periodicamente para matar todos os Wrappers zombies.
 	
 	Ao montar algumas simulações com está estrategia foi visto algo incomum: é possivel que processos mais longos gerem starvation para processos mais rapidos!! É possivel que o tempo de um conjunto de processos longos tenham duração duas vezes maior do que o tempo de cada escalonador, assim, efetivamente só seria utilizado o escalonador HJF, o que não seria interessante para um bom turnaround medio. Para vencer essa dificuldade foi implementado um sistema de execução minima, alem do tempo. Esse sistema consiste em um contador que deve ter um valor minimo para que os escalonadores sejam trocados, sendo que esse contador é incrementado a cada processo que é pego da nova tabela de indexação.
 
-	Tambem foi feito um estudo das possiveis condições de corrida e possiveis deadlocks. Como a arquitetura base do sistema depende muito de semaforos não foi algo tão complicado usa-los para evitar qualquer condição de corrida que resultasse em inconsistencia.
+	Também foi feito um estudo das possíveis condições de corrida e possíveis deadlocks. Como a arquitetura base do sistema depende muito de semaforos não foi algo tão complicado usá-los para evitar qualquer condição de corrida que resultasse em inconsistência.
 
 Estruturas IPC Utilizadas:
-	Primeiramente, foram usadas um par de memorias compartilhadas para cada tabela utilizada (uma tabela de processos e duas de indexação), com funções da biblioteca de memoria compartilhada (que implementamos) para acessa-las. Para enviar processos do escalonador (so_schedule) para o gerenciador e criador de processos (spawner) foi utilizada uma fila de mensagens, que foi escolhida dada a sua natureza blocante. Usando uma fila de mensagem o Spawner fica bloqueado esperando uma nova requisição sem ficar gastando tempo da CPU em busy waiting.
 
-	Para semaforos foram feitas tres funções basicas, um semop blocante insensivel a sinais, um semop blocante sensivel a sinais e um semop não blocante. O motivo da escolha dessas tres funções foi que muito frequentemente trabalhamos com sinais (SIGALRM)
+	Primeiramente, foram usadas um par de memórias compartilhadas para cada tabela utilizada (uma tabela de processos e duas de indexação), com funções da biblioteca de memória compartilhada (que implementamos) para acessá-las. Para enviar processos do escalonador (so_schedule) para o gerenciador e criador de processos (spawner) foi utilizada uma fila de mensagens, que foi escolhida dada a sua natureza blocante. Usando uma fila de mensagem o Spawner fica bloqueado esperando uma nova requisição sem ficar gastando tempo da CPU em busy waiting.
+
+	Para semáforos foram feitas três funções básicas, um semop blocante insensível a sinais, um semop blocante sensível a sinais e um semop não blocante. O motivo da escolha dessas tres funções foi que muito frequentemente trabalhamos com sinais (SIGALRM)
