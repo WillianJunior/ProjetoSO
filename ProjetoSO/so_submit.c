@@ -169,19 +169,20 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
         if (!aux) { // Empty list
             aux = malloc_proc_shr_mem();
 
-            //memcpy(&(aux->flex_types.pl.testp), &(proc_list->flex_types.p), sizeof(flex_typesess));  // just for testing
-            aux->flex_types.pl.proc_index = proc_index;
+            // set the index table effective values
             aux->flex_types.pl.priority_coef = priority_coef;
+            aux->flex_types.pl.proc_index = proc_index;
 
             set_first_proc(aux);
             set_last_proc(aux);
         } else if (aux->flex_types.pl.priority_coef < priority_coef) { // new first element
 
             index_aux = malloc_proc_shr_mem();
-            //memcpy(&(index_aux->flex_types.pl.testp), &(proc_list->flex_types.p), sizeof(flex_typesess));  // just for testing
-            // Sets the priority coeficient
+            
+            // set the index table effective values
             index_aux->flex_types.pl.priority_coef = priority_coef;
-            index_aux->flex_types.pl.priority_coef = priority_coef;
+            index_aux->flex_types.pl.proc_index = proc_index;
+
             // New one points the the old one
             index_aux->next_index = index_proc(aux);
             index_aux->next = aux;
@@ -193,7 +194,6 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
         } else { // not any kind of first element
             // if there is at least one item we find the right spot
             while(next_proc(aux) && next_proc(aux)->flex_types.pl.priority_coef >= priority_coef) {
-                //aux = aux->next;
                 aux = next_proc(aux);
             }
 
@@ -201,9 +201,9 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
                 // insert a new element
                 index_aux = malloc_proc_shr_mem();
 
-                //memcpy(&(index_aux->flex_types.pl.testp), &(proc_list->flex_types.p), sizeof(flex_typesess));  // just for testing
+                // set the index table effective values
+                index_aux->flex_types.pl.priority_coef = priority_coef;
                 index_aux->flex_types.pl.proc_index = proc_index;
-                //proc_list->flex_types.p.sjf_sch_index = ...;
 
                 aux->next = index_aux;
                 aux->next_index = index_proc(index_aux);
@@ -211,7 +211,6 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
                 index_aux->prev = aux;
                 index_aux->prev_index = index_proc(aux);
 
-                index_aux->flex_types.pl.priority_coef = priority_coef;
 
 
                 set_last_proc(index_aux);
@@ -219,8 +218,8 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
             } else {
                 // insert a new element
                 index_aux = malloc_proc_shr_mem();
-
-                //memcpy(&(index_aux->flex_types.pl.testp), &(proc_list->flex_types.p), sizeof(flex_typesess));  // just for testing
+                
+                // set the index table effective values
                 index_aux->flex_types.pl.priority_coef = priority_coef;
                 index_aux->flex_types.pl.proc_index = proc_index;
 
