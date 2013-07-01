@@ -8,7 +8,9 @@ int main(int argc, char const *argv[]) {
 	int idsem_free_proc;
 	int idsem_proc_table_mutex;
 	int idqueue;
+    int idqueue_shutdown;
 	int state;
+    int *my_pid = malloc(sizeof(int));
 	int *proc_index;
 	all_types *proc;
 	//all_types *proc_temp;
@@ -30,6 +32,16 @@ int main(int argc, char const *argv[]) {
 		printf( "erro na obtencao da fila\n" );
 		exit(1);
 	}
+
+    // access the msg queue to send the pid to so_shutdown
+	if ((idqueue_shutdown = msgget(SHTDWN_PIDS_MSGQ_KEY, IPC_CREAT|0x1FF)) < 0) {
+		printf( "erro na obtencao da fila\n" );
+		exit(1);
+	}
+
+	// send the pid to the so_shutdown process
+	*my_pid = getpid();
+	msgsnd(idqueue_shutdown, my_pid, sizeof(int), 0);
 
 	// create the zombie killer 
 	signal(SIGALRM, zombie_killer);
@@ -98,9 +110,7 @@ int main(int argc, char const *argv[]) {
 			// remove the process from the process table also using the mutex (NOT WORKING!!! MAYBE BECAUSE OF THE ALARM)
 			sem_op(idsem_proc_table_mutex, 0);
 			sem_op(idsem_proc_table_mutex, 1);
-            printf("###### BREAK 1 #######\n");
 			remove_proc_shr_mem(proc);
-            printf("###### BREAK 2 #######\n");
 			sem_op(idsem_proc_table_mutex, -1);
 
 			return state;
@@ -125,7 +135,7 @@ void zombie_killer() {
 }
 
 void proc_killer () {
-	printf("[all_types Killer] forced kill on all_types %d\n", pid);
+	printf("[Process Killer] forced kill on process: %d\n", pid);
 	kill(pid, SIGKILL);
 }
 
