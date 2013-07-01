@@ -5,13 +5,12 @@ clean_ipc:
 	-ipcrm -M 0x1928
 	-ipcrm -M 0x1929
 	-ipcrm -M 0x192a
-	-ipcrm -M 0x1930
-	-ipcrm -M 0x1931
-	-ipcrm -M 0x1932
+	-ipcrm -M 0x192b
+	-ipcrm -M 0x192c
 	-ipcrm -S 0x1927
 	-ipcrm -S 0x1928
 	-ipcrm -S 0x1929
-	-ipcrm -S 0x1930
+	-ipcrm -S 0x192a
 	-ipcrm -Q 0x1927
 
 clean: clean_ipc
