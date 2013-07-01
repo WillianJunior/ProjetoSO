@@ -12,6 +12,7 @@ char* sec2str(unsigned long seconds);
 
 //void proc_pretty_printer(struct process proc);
 void proc_pretty_printer(struct all_types proc);
+void proc_index_test_pretty_printer(struct all_types proc);
 
 // blocking semop
 void sem_op (int idsem, int n);

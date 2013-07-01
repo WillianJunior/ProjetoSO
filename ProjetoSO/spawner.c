@@ -8,6 +8,7 @@ int main(int argc, char const *argv[]) {
 	int idqueue;
 	int state;
 	all_types *proc;
+	all_types *proc_temp;
 
 	// start the semaphore
 	if ((idsem_free_proc = semget(FREE_PROC_SEM_KEY, 1, IPC_CREAT|0x1ff)) < 0) { 
@@ -28,6 +29,8 @@ int main(int argc, char const *argv[]) {
 	// malloc the proc
 	proc = malloc(sizeof(all_types));
 
+	init(PROC_TABLE_SHM_KEY);
+
 	while (1) {
 		// get the all_types request from the message queue
 		printf("[Breeder] Waiting a new all_types...\n");
@@ -39,6 +42,7 @@ int main(int argc, char const *argv[]) {
 		// fork himself to a wrapper to set and treat the timeout
 		if ((pid = fork()) == 0) {
 			printf("[Wrapper] Wrapper created\n");
+
 			// fork the wrapper to execute the all_types
 			if ((pid = fork()) == 0) {
 				// execute the all_types from the fork of the wrapper
@@ -50,6 +54,11 @@ int main(int argc, char const *argv[]) {
 			printf("[Wrapper] Setting timeout alarm\n");
 			signal(SIGALRM, proc_killer);
 			alarm(proc->flex_proc.p.max_time);
+
+			// set the initial time of execution
+			proc->flex_proc.p.start_sec = time(NULL);
+
+			// wait for the process to finish
 			printf("[Wrapper] Waiting for the program to finish...\n");
 			wait(&state);
 			alarm(0);
@@ -57,6 +66,7 @@ int main(int argc, char const *argv[]) {
 			printf("[Wrapper] Program finished\n");
 			
 			// refresh the status of the all_types
+			printf("index: %d\n", index_proc(proc));
 			proc->flex_proc.p.status = FINISHED; // not working
 
 			// send the signal of free all_types

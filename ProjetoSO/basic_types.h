@@ -53,11 +53,15 @@ struct flex_process {
 	float priority_coef;
 	enum status status;
 	int n_req;
+	int start_sec;
+	int sjf_sch_index;
+	int ljf_sch_index;
 };
 
 struct priority_list {
 	int proc_index;
 	int priority_coef;
+	struct flex_process testp;
 };
 
 struct all_types {

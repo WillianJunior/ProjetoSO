@@ -8,8 +8,9 @@
 #include <errno.h>
 #include <string.h>
 
-#include "basic_types.h"
 #include "shrmem.h"
+#include "schedulers.h"
+#include "basic_types.h"
 #include "util.h"
 
 int parse_process_list(struct all_types **p_list, const size_t size, FILE* fp);

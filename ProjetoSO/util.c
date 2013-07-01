@@ -61,6 +61,27 @@ void proc_pretty_printer(struct all_types proc) {
 	// printf("\n");
 }
 
+void proc_index_test_pretty_printer(struct all_types proc) {
+	printf("%-8d", proc.flex_proc.pl.testp.n_req);
+	printf("%-12s", sec2str(proc.flex_proc.pl.testp.max_time));
+	printf("%-10u", proc.flex_proc.pl.testp.n_proc);
+	// TODO: Update the line below to print current time.
+	printf("%-12s", sec2str(proc.flex_proc.pl.testp.max_time));
+	printf("%-12s", proc.flex_proc.pl.testp.status ? "PENDING" : "RUNNING");
+	printf("%-s", strcat(strcat(proc.flex_proc.pl.testp.exec_name, " "), proc.flex_proc.pl.testp.argv));
+	printf("\n");
+
+	// printf("Process: \n");
+	// printf("exec_path: %s\n", proc.flex_proc.p.exec_path);
+	// printf("max_time: %lu\n", proc.flex_proc.p.max_time);
+	// printf("n_proc: %u\n", proc.flex_proc.p.n_proc);
+	// printf("argv: %s\n", proc.flex_proc.p.argv);
+	// printf("prev_index: %d\n", proc.prev_index);
+	// printf("next_index: %d\n", proc.next_index);
+	// printf("status: %s\n", proc.flex_proc.p.status?"pending":"running");
+	// printf("\n");
+}
+
 void sem_op (int idsem, int n) {
 	sem_op_s.sem_num = 0;
 	sem_op_s.sem_op = n;
