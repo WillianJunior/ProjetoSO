@@ -1,3 +1,16 @@
+/**
+ * Universidade de Brasília - UnB
+ * Alunos: Alexandre Lucchesi Alencar - 09/0104471
+ *         Willian Júnior - 09/0135806
+ *
+ * Sistemas Operacionais - Profa. Alba Melo
+ *
+ * Trabalho 1
+ *
+ * This code can be download in: https://github.com/WillianJunior/ProjetoSO.git
+ *
+ */
+
 #include "util.h"
 
 char* sec2str(unsigned long seconds) {
@@ -97,3 +110,12 @@ void sem_reset (int idsem) {
 int sem_kill (int idsem) {
 	return semctl(idsem, 0, IPC_RMID);
 }
+
+int shm_kill (int idshm) {
+	return shmctl(idshm, IPC_RMID, 0);
+}
+
+int msg_kill (int idmsg) {
+	return msgctl(idmsg, IPC_RMID, 0);
+}
+

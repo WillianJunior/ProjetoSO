@@ -1,3 +1,16 @@
+/**
+ * Universidade de Brasília - UnB
+ * Alunos: Alexandre Lucchesi Alencar - 09/0104471
+ *         Willian Júnior - 09/0135806
+ *
+ * Sistemas Operacionais - Profa. Alba Melo
+ *
+ * Trabalho 1
+ *
+ * This code can be download in: https://github.com/WillianJunior/ProjetoSO.git
+ *
+ */
+
 #ifndef BASIC_TYPES_H
 #define BASIC_TYPES_H
 
@@ -5,7 +18,7 @@
 
 #define SHM_BASE_PROC_NUMBER 50
 
-#define SHUTDOWN_TIMEOUT 3
+#define SHUTDOWN_TIMEOUT 120
 
 #define PROC_EXEC_NAME_SIZE 50
 #define PROC_EXEC_PATH_SIZE 100
@@ -26,6 +39,9 @@
 
 #define SCH_SPW_MSGQ_KEY 0x1927
 #define SHTDWN_PIDS_MSGQ_KEY 0x1928
+
+#define BITMAP_BLOCK_SIZE    sizeof(unsigned char) * 8
+#define BITMAP_SIZE          SHM_BASE_PROC_NUMBER / BITMAP_BLOCK_SIZE
 
 enum status {
 	RUNNING,

@@ -1,3 +1,16 @@
+/**
+ * Universidade de Brasília - UnB
+ * Alunos: Alexandre Lucchesi Alencar - 09/0104471
+ *         Willian Júnior - 09/0135806
+ *
+ * Sistemas Operacionais - Profa. Alba Melo
+ *
+ * Trabalho 1
+ *
+ * This code can be download in: https://github.com/WillianJunior/ProjetoSO.git
+ *
+ */
+
 #ifndef SO_SUBMIT_H
 #define SO_SUBMIT_H
 

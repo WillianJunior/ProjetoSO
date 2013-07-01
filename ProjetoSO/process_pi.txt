@@ -1,34 +1,43 @@
+%
+% Universidade de Brasília - UnB
+% Alunos: Alexandre Lucchesi Alencar - 09/0104471
+%         Willian Júnior - 09/0135806
+%
+% Sistemas Operacionais - Profa. Alba Melo
+%
+% Trabalho 1
+%
+% This code can be download in: https://github.com/WillianJunior/ProjetoSO.git
+
 % Comentário 1
 filename=helloworld
 params=
 max_time=00:05:00
-n_proc=2
+n_proc=4
 
 % Comentário 2
-%filename=fibonacci
-%params=10
-%max_time=00:05:00
-%n_proc=20
+filename=fibonacci
+params=10 abc lol
+max_time=00:05:00
+n_proc=1
 
 % Comentário 14
-%filename=./helloworld-not
-%comentario pra fuder td
+%filename=./badword
+% Just another dummy comment...
 %params=
 %max_time=00:05:00
 %n_proc=1
 
 % Comentário 14
-%filename=./fuck-this-process
+%filename=./random
 %comentario pra fuder td
 %params=
 %max_time=00:05:00
 %n_proc=4
 
-
 % Comentário 25
-%filename=./fibonacci
+%filename=./program2
 %params=100 ad
 %max_time=01:01:01
 %n_proc=2
-
 

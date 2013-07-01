@@ -1,21 +1,17 @@
 /**
  * Universidade de Brasília - UnB
  * Alunos: Alexandre Lucchesi Alencar - 09/0104471
- *         Willian Júnior -
+ *         Willian Júnior - 09/0135806
  *
  * Sistemas Operacionais - Profa. Alba Melo
  *
- * Trabalho 1 - Escalonador de all_typesos
+ * Trabalho 1
+ *
+ * This code can be download in: https://github.com/WillianJunior/ProjetoSO.git
  *
  */
 
 #include "shrmem.h"
-
-/**
- * Private things.
- */
-#define BITMAP_BLOCK_SIZE    sizeof(unsigned char) * 8
-#define BITMAP_SIZE          SHM_BASE_PROC_NUMBER / BITMAP_BLOCK_SIZE
 
 /**
  * Not exported functions.

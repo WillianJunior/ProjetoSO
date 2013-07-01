@@ -1,3 +1,16 @@
+/**
+ * Universidade de Brasília - UnB
+ * Alunos: Alexandre Lucchesi Alencar - 09/0104471
+ *         Willian Júnior - 09/0135806
+ *
+ * Sistemas Operacionais - Profa. Alba Melo
+ *
+ * Trabalho 1
+ *
+ * This code can be download in: https://github.com/WillianJunior/ProjetoSO.git
+ *
+ */
+
 #ifndef UTIL_H
 #define UTIL_H
 
@@ -7,6 +20,11 @@
 #include <string.h>
 #include <errno.h>
 #include <time.h>
+
+#include <sys/ipc.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
+#include <sys/msg.h>
 
 #include "basic_types.h"
 
@@ -28,5 +46,9 @@ int sem_op_nblock (int idsem, int n);
 void sem_reset (int idsem);
 
 int sem_kill (int idsem);
+
+int shm_kill (int idshm);
+
+int msg_kill (int idmsg);
 
 #endif

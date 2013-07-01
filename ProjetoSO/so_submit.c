@@ -1,3 +1,16 @@
+/**
+ * Universidade de Brasília - UnB
+ * Alunos: Alexandre Lucchesi Alencar - 09/0104471
+ *         Willian Júnior - 09/0135806
+ *
+ * Sistemas Operacionais - Profa. Alba Melo
+ *
+ * Trabalho 1
+ *
+ * This code can be download in: https://github.com/WillianJunior/ProjetoSO.git
+ *
+ */
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -159,7 +172,6 @@ int refresh_index_list(all_types *proc_list, int index_key, int (*scheduler) (in
     init(PROC_TABLE_SHM_KEY);
     if ((aux = get_last_proc()))
         proc_index = index_proc(aux)+1;
-    printf("offset: %d\n", proc_index);
 
     // initialize the index list memory manager
     init(index_key);
